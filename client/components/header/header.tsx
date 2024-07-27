@@ -1,13 +1,40 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Modal } from "react-native";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 export default function Header() {
   const [modalVisible, setModalVisible] = useState(false);
   const [carSlots, setCarSlots] = useState(300);
   const [bikeSlots, setBikeSlots] = useState(100);
+  const [wardenName, setWardenName] = useState('');
+
+  useEffect(() => {
+    const fetchWardenName = async () => {
+      try {
+        console.log('Fetching user_id from AsyncStorage');
+        const user_id = await AsyncStorage.getItem('user_id');
+        console.log('Retrieved user_id:', user_id);
+
+        if (user_id) {
+          console.log('Making API call to fetch warden name');
+          const response = await axios.get(`http://192.168.238.115:5000/get-warden-name/${user_id}`);
+          console.log('API response:', response.data);
+
+          setWardenName(response.data.wardenName);
+          console.log('Warden name set in state:', response.data.wardenName);
+        } else {
+          console.log('No user_id found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error fetching warden name:', error);
+      }
+    };
+
+    fetchWardenName();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -20,7 +47,7 @@ export default function Header() {
             Hello,
           </Text>
           <Text style={[styles.text, { fontFamily: "Raleway_700Bold" }]}>
-            Saman!
+            {wardenName ? wardenName : 'Loading...'}
           </Text>
         </View>
       </View>

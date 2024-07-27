@@ -266,6 +266,26 @@ console.log('update isparked in driver table:', driver_id);
 
 
 
+app.get('/get-warden-name/:user_id', async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    const result = await pool.query('SELECT fname FROM warden WHERE user_id = $1', [userId]);
+    if (result.rows.length > 0) {
+      res.json({ wardenName: result.rows[0].fname });
+    } else {
+      res.json({ wardenName: null });
+    }
+  } catch (error) {
+    console.error('Error fetching warden name:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
