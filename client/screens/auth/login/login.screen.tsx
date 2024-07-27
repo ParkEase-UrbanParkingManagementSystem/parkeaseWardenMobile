@@ -6,7 +6,8 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    ActivityIndicator, SafeAreaView,
+    ActivityIndicator,
+    SafeAreaView,
 } from "react-native";
 import {
     Entypo,
@@ -29,23 +30,21 @@ import {
 } from "@expo-google-fonts/nunito";
 import { useState } from "react";
 import { router } from "expo-router";
-import { SERVER_URI } from "@/utils/uri";
-// import axios from "axios";
 // import { SERVER_URI } from "@/utils/uri";
-// import { Toast } from "react-native-toast-notifications";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { Toast } from "react-native-toast-notifications";
+import { ToastProvider, useToast } from 'react-native-toast-notifications';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import colors from "../../../constants/Colors"
-import {white} from "colorette";
-import {color} from "ansi-fragments";
+import colors from "../../../constants/Colors";
+
 
 export default function LoginScreen() {
     const [isPasswordVisible, setPasswordVisible] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [buttonSpinner, setButtonSpinner] = useState(false);
-    const [userInfo, setUserInfo] = useState({
-        email: "",
-        password: "",
-    });
+    const toast = useToast();
     const [required, setRequired] = useState("");
     const [error, setError] = useState({
         password: "",
@@ -64,64 +63,152 @@ export default function LoginScreen() {
         return null;
     }
 
-    const handlePasswordValidation = (value: string) => {
-        const password = value;
-        const passwordSpecialCharacter = /(?=.*[!@#$&*])/;
-        const passwordOneNumber = /(?=.*[0-9])/;
-        const passwordSixValue = /(?=.{6,})/;
+    // const handlePasswordValidation = (value: string) => {
+    //     const password = value;
+    //     const passwordSpecialCharacter = /(?=.*[!@#$&*])/;
+    //     const passwordOneNumber = /(?=.*[0-9])/;
+    //     const passwordSixValue = /(?=.{6,})/;
 
-        if (!passwordSpecialCharacter.test(password)) {
-            setError({
-                ...error,
-                password: "Write at least one special character",
-            });
-            setUserInfo({ ...userInfo, password: "" });
-        } else if (!passwordOneNumber.test(password)) {
-            setError({
-                ...error,
-                password: "Write at least one number",
-            });
-            setUserInfo({ ...userInfo, password: "" });
-        } else if (!passwordSixValue.test(password)) {
-            setError({
-                ...error,
-                password: "Write at least 6 characters",
-            });
-            setUserInfo({ ...userInfo, password: "" });
-        } else {
-            setError({
-                ...error,
-                password: "",
-            });
-            setUserInfo({ ...userInfo, password: value });
+    //     if (!passwordSpecialCharacter.test(password)) {
+    //         setError({
+    //             ...error,
+    //             password: "Write at least one special character",
+    //         });
+    //         setuserInfo({ ...userInfo, password: "" });
+    //     } else if (!passwordOneNumber.test(password)) {
+    //         setError({
+    //             ...error,
+    //             password: "Write at least one number",
+    //         });
+    //         setuserInfo({ ...userInfo, password: "" });
+    //     } else if (!passwordSixValue.test(password)) {
+    //         setError({
+    //             ...error,
+    //             password: "Write at least 6 characters",
+    //         });
+    //         setuserInfo({ ...userInfo, password: "" });
+    //     } else {
+    //         setError({
+    //             ...error,
+    //             password: "",
+    //         });
+    //         setuserInfo({ ...userInfo, password: value });
+    //     }
+    // };
+
+
+    // const handleSignIn = async () => {
+    //     setButtonSpinner(true);
+    //     try {
+    //         // localhost
+    //         const res = await axios.post('http://192.168.238.186:5000/login', { 
+    //             email,
+    //             password,
+    //         });
+    //         await AsyncStorage.setItem('access_token', res.data.token);  
+            
+    //         router.push("/(tabs)");
+
+    //         console.log('Login successful');
+    //         toast.show('Login successful!', {
+    //         type: 'success',});
+    //     } catch (error) {
+    //         console.log(error);
+    //         toast.show('Email or password is not correct!', {
+    //             type: 'danger',
+    //         });
+    //     } finally {
+    //         setButtonSpinner(false);
+    //     }
+    // };
+    const handleSignIn = () => {
+        setButtonSpinner(true); // Set loading state, if needed
+    
+        axios.post('http://192.168.238.115:5000/login', {
+            email,
+            password
+        })
+        .then(async response => {
+            // Check if the response contains the token and user data
+            if (response.data && response.data.token) {
+                // Save the token to AsyncStorage
+                await AsyncStorage.setItem('access_token', response.data.token);
+                console.log('Token saved successfully');
+    
+                // Save user data to AsyncStorage
+                const userData = response.data.user;
+    
+                // Ensure user data is stringified before saving
+                await AsyncStorage.setItem('user_data', JSON.stringify(userData));
+    
+                // Retrieve user data from AsyncStorage
+                const userDataString = await AsyncStorage.getItem('user_data');
+                if (userDataString) {
+                    const parsedUserData = JSON.parse(userDataString);
+                    console.log('User data:', parsedUserData);
+                    console.log('User ID:', parsedUserData.user_id);
+    
+                    // Save user_id separately if needed
+                    await AsyncStorage.setItem('user_id', parsedUserData.user_id);
+                } else {
+                    console.log('No user data found');
+                }
+    
+                // Redirect to another page, e.g., home page
+                router.push("/(tabs)");
+    
+                // Show success message
+                toast.show('Login successful!', { type: 'success' });
+            } else {
+                console.error('Response data is missing expected fields');
+            }
+        })
+        .catch(error => {
+            // Handle different types of errors
+            if (error.response) {
+                // Server responded with a status other than 2xx
+                const statusCode = error.response.status;
+                if (statusCode === 400) {
+                    toast.show('Email or password is incorrect!', { type: 'danger' });
+                } else if (statusCode === 403) {
+                    toast.show('Unauthorized role. Access denied.', { type: 'danger' });
+                } else {
+                    toast.show('An unexpected error occurred. Please try again.', { type: 'danger' });
+                }
+            } else if (error.request) {
+                // Request was made but no response was received
+                console.error('No response received:', error.request);
+                toast.show('No response from server. Please check your connection.', { type: 'danger' });
+            } else {
+                // Something happened in setting up the request
+                console.error('Error setting up request:', error.message);
+                toast.show('Error setting up request. Please try again.', { type: 'danger' });
+            }
+        })
+        .finally(() => {
+            // Reset loading state
+            setButtonSpinner(false);
+        });
+    };
+    
+
+    // After successful login
+    const storeToken = async (token: string) => {
+        try {
+            await AsyncStorage.setItem('token', token);
+            console.log('Token stored successfully');
+        } catch (error) {
+            console.error('Failed to store token:', error);
         }
     };
-
-    const handleSignIn = async () => {
-        // await axios
-        //     .post(`${SERVER_URI}/login`, {
-        //         email: userInfo.email,
-        //         password: userInfo.password,
-        //     })
-        //     .then(async (res) => {
-        //         await AsyncStorage.setItem("access_token", res.data.accessToken);
-        //         await AsyncStorage.setItem("refresh_token", res.data.refreshToken);
-        //         router.push("/(tabs)");
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //         Toast.show("Email or password is not correct!", {
-        //             type: "danger",
-        //         });
-        //     });
-    };
+    
 
     return (
         <LinearGradient
-            colors={[colors.tertiary,"white"]}
-            style={{ flex: 1}}
+            colors={[colors.tertiary, "white"]}
+            style={{ flex: 1 }}
             start={{ x: 0.5, y: 1 }}
-            end={{x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 0 }}
         >
             <SafeAreaView style={{ flex: 1 }}>
                 <ScrollView>
@@ -140,11 +227,11 @@ export default function LoginScreen() {
                             <TextInput
                                 style={[styles.input, { paddingLeft: 40 }]}
                                 keyboardType="email-address"
-                                value={userInfo.email}
+                                value={email}
                                 placeholder="support@becodemy.com"
-                                onChangeText={(value) =>
-                                    setUserInfo({ ...userInfo, email: value })
-                                }
+                                onChangeText={setEmail}
+                          
+                                
                             />
                             <Fontisto
                                 style={{ position: "absolute", left: 26, top: 17.8 }}
@@ -159,12 +246,12 @@ export default function LoginScreen() {
                             )}
                             <View style={{ marginTop: 15 }}>
                                 <TextInput
-                                    style={styles.input}
-                                    keyboardType="default"
-                                    secureTextEntry={!isPasswordVisible}
-                                    defaultValue=""
-                                    placeholder="********"
-                                    onChangeText={handlePasswordValidation}
+                                      style={styles.input}
+                                      secureTextEntry={!isPasswordVisible}
+                                      placeholder="********"
+                                      value={password}
+                                      onChangeText={setPassword}
+                                   
                                 />
                                 <TouchableOpacity
                                     style={styles.visibleIcon}
@@ -213,12 +300,10 @@ export default function LoginScreen() {
                                     padding: 16,
                                     borderRadius: 8,
                                     marginHorizontal: 16,
-                                    // backgroundColor: colors.primary,
                                     marginTop: 15,
                                     backgroundColor: "rgba(26, 33, 49, 1)",
                                 }}
-                                // onPress={handleSignIn}
-                                onPress={() => router.push("/(tabs)")}
+                                onPress={handleSignIn}
                             >
                                 {buttonSpinner ? (
                                     <ActivityIndicator size="small" color={"white"} />
@@ -286,7 +371,7 @@ const styles = StyleSheet.create({
         height: 250,
         alignSelf: "center",
         marginTop: 25,
-        marginBottom: 25
+        marginBottom: 25,
     },
     welcomeText: {
         textAlign: "center",
@@ -343,6 +428,6 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 60,
     },
-
-
 });
+
+
