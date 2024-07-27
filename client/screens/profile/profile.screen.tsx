@@ -4,9 +4,23 @@ import colors from "../../constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import Header3 from "@/components/header3/header3";
 import { router } from "expo-router";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 export default function Settings() {
+  const handleLogout = async () => {
+    try {
+      // Remove the token from AsyncStorage
+      await AsyncStorage.removeItem('userToken');
+      // Optionally, clear any other data if needed
+      await AsyncStorage.clear();
+
+      // Redirect to the login screen or home screen
+      router.push('/login'); // Update the path based on your routing setup
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
   return (
     <LinearGradient 
       colors={[colors.background,"white"]}
@@ -51,7 +65,7 @@ export default function Settings() {
               <View style={styles.divider}></View>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/qr")} style={styles.rowInformation}>
+          <TouchableOpacity onPress={handleLogout} style={styles.rowInformation}>
             <View style={styles.headlineParent}>
               <Text style={styles.headline}>Log Out</Text>
               <Image style={styles.icon38} source={require('@/assets/icons/Group.png')} />
