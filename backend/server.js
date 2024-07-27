@@ -244,6 +244,19 @@ console.log('userissdddd:', user_id);
 
     console.log('driver_vehicle_idabhbai:', driver_vehicle_id);
 
+    const updateVehicleTable = `
+      UPDATE vehicle SET isparked = true WHERE vehicle_id = $1;
+      `;
+    await pool.query(updateVehicleTable, [vehicle_id]);
+console.log('update isp arked in vehicle batblr:', vehicle_id);
+
+    const updateDriverTable = `
+      UPDATE driver SET isparked = true WHERE driver_id = $1;
+      `;
+    await pool.query(updateDriverTable, [driver_id]);
+console.log('update isparked in driver table:', driver_id);
+
+
     res.status(200).json({ message: 'Parking slot assigned successfully' });
   } catch (error) {
     console.error('Error assigning parking slot:', error);
