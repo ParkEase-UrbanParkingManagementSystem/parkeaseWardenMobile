@@ -16,8 +16,10 @@ export default function ViewParkedVehicleScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    // Effect logic can go here if needed
-  }, []); // Ensure empty dependency array if no dependencies
+    if (parsedVehicle) {
+      console.log('Vehicle data:', parsedVehicle);
+    }
+  }, [parsedVehicle]);
 
   if (!fontsLoaded || !parsedVehicle) {
     return null; // Return loading indicator or null if fonts are not loaded or vehicle data is not available
@@ -43,8 +45,6 @@ export default function ViewParkedVehicleScreen() {
   const handleExitConfirm = () => {
     console.log("Exiting vehicle confirmed");
 
-    // Get the current time as ISO string
-    // const currentTime = new Date().toISOString();
     // Get the current time as a Date object
     const currentTime1 = new Date();
     const currentTime = currentTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',hour12: true });
@@ -80,10 +80,17 @@ export default function ViewParkedVehicleScreen() {
 };
 
 // Basic validation function for vehicle data
-const validateVehicleData = (data: { number: any; parkingId: any; driverId: any; outTime: any; }) => {
-    return data && data.number && data.parkingId && data.driverId && data.outTime;
+// const validateVehicleData = (data: { number: any; parkingId: any; driverId: any; outTime: any; }) => {
+//     return data && data.number && data.parkingId && data.driverId && data.outTime;
+// };
+// Basic validation function for vehicle data
+const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any; driver_name: any; outTime: any; }) => {
+  return data &&
+    data.vehicle_number &&
+    data.parking_lot_name &&
+    data.driver_name &&
+    data.outTime;
 };
-
 
 
 
@@ -100,43 +107,54 @@ const validateVehicleData = (data: { number: any; parkingId: any; driverId: any;
       <View style={styles.header}>
         <Image
           style={styles.vehicleImage}
-          source={parsedVehicle.type === 'bike' ? require('@/assets/icons/bike.png') : require('@/assets/icons/car.png')}
-        />
-        <Text style={[styles.vehicleNumber, { fontFamily: "Raleway_700Bold" }]}>{parsedVehicle.number}</Text>
+          source={
+            // parsedVehicle.vehicle_type_name === 'Bike' ? require('@/assets/icons/bike.png') : require('@/assets/icons/car.png')}
+            parsedVehicle.vehicle_type_name === 'Car'
+                      ? require('@/assets/icons/car.png')
+                      : parsedVehicle.vehicle_type_name === 'Bike'
+                      ? require('@/assets/icons/bike.png')
+                      : parsedVehicle.vehicle_type_name === 'Large Vehicle'
+                      ? require('@/assets/icons/largeVehicle.png')
+                      : parsedVehicle.vehicle_type_name === 'Threewheeler'
+                      ? require('@/assets/icons/tuk-tuk.png')
+                      : require('@/assets/icons/bike.png')
+          }
+            />
+        <Text style={[styles.vehicleNumber, { fontFamily: "Raleway_700Bold" }]}>{parsedVehicle.vehicle_number}</Text>
       </View>
 
       <View style={styles.detailsContainer}>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Location</Text>
-          <Text style={styles.value}>{parsedVehicle.parkingZone}</Text>
+          <Text style={styles.value}>{parsedVehicle.parking_lot_name}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>Type of Vehicle</Text>
-          <Text style={styles.value}>{parsedVehicle.type}</Text>
+          <Text style={styles.label}>Vehicle Type</Text>
+          <Text style={styles.value}>{parsedVehicle.vehicle_type_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>In Time</Text>
-          <Text style={[styles.value, styles.highlight]}>{parsedVehicle.parkedTime}</Text>
+          <Text style={[styles.value, styles.highlight]}>{new Date(parsedVehicle.in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Date</Text>
-          <Text style={styles.value}>{parsedVehicle.Date}</Text>
+          <Text style={styles.value}>{new Date(parsedVehicle.in_time).toLocaleDateString()}</Text>
         </View>
+        {/* <View style={styles.detailRow}> */}
+          {/* <Text style={styles.label}>Parking ID</Text> */}
+          {/* <Text style={styles.value}>{parsedVehicle.instance_id}</Text> */}
+        {/* </View> */}
         <View style={styles.detailRow}>
-          <Text style={styles.label}>Parking ID</Text>
-          <Text style={styles.value}>{parsedVehicle.parkingId}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Driver ID</Text>
-          <Text style={styles.value}>{parsedVehicle.driverId}</Text>
+          <Text style={styles.label}>Driver Name</Text>
+          <Text style={styles.value}>{parsedVehicle.driver_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Slots Allocated</Text>
           <Text style={styles.value}>{parsedVehicle.slotsAllocated}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>Warden ID</Text>
-          <Text style={styles.value}>{parsedVehicle.wardenId}</Text>
+          <Text style={styles.label}>Warden Name</Text>
+          <Text style={styles.value}>{parsedVehicle.warden_name}</Text>
         </View>
       </View>
 
