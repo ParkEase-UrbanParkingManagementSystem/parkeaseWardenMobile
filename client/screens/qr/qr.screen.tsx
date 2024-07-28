@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, Alert, TouchableOpacity } from 'reac
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Camera } from 'expo-camera';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from 'expo-router';
 
 
 const QRScanner = () => {
@@ -13,6 +14,7 @@ const QRScanner = () => {
     const [userId, setUserId] = useState('');
     const [parkingSlotId, setParkingSlotId] = useState('');
     const [isAllowedToPark, setIsAllowedToPark] = useState(false);
+    const router = useRouter(); // Initialize router
 
     useEffect(() => {
         (async () => {
@@ -30,7 +32,7 @@ const QRScanner = () => {
 
         try {
             // localhost
-            const response = await fetch('http://192.168.238.115:5000/check-parking-status', {
+            const response = await fetch('http://172.20.10.3:5000/check-parking-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -76,7 +78,7 @@ const QRScanner = () => {
         try {
             const user_id = await AsyncStorage.getItem('user_id');
 
-            const response = await fetch('http://192.168.238.115:5000/assign-parking', {
+            const response = await fetch('http://172.20.10.3:5000/assign-parking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -95,6 +97,9 @@ const QRScanner = () => {
 
             const result = await response.json();
             Alert.alert('Success', result.message);
+
+            router.push('(tabs)?refresh=true');
+
         } catch (error) {
             console.error('Error during parking slot assignment:', error);
             if (error instanceof Error) {
