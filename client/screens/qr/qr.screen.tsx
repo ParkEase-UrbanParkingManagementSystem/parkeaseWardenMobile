@@ -5,13 +5,16 @@ import { Camera } from 'expo-camera';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
 
+
 const QRScanner = () => {
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [scanned, setScanned] = useState(false);
+    const [scanResult, setScanResult] = useState('');
     const [vehicleId, setVehicleId] = useState('');
     const [userId, setUserId] = useState('');
+    const [parkingSlotId, setParkingSlotId] = useState('');
     const [isAllowedToPark, setIsAllowedToPark] = useState(false);
-    const router = useRouter();
+    const router = useRouter(); // Initialize router
 
     useEffect(() => {
         (async () => {
@@ -22,18 +25,22 @@ const QRScanner = () => {
 
     const handleBarCodeScanned = async ({ type, data }: { type: string, data: string }) => {
         setScanned(true);
+        setScanResult(data);
         const [vehicle, user] = data.split(',').map(part => part.split(':')[1].trim());
         setVehicleId(vehicle);
         setUserId(user);
 
         try {
-            // Check if the vehicle is parked
+            // localhost
             const response = await fetch('http://172.20.10.3:5000/check-parking-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ vehicle_id: vehicle, user_id: user })
+                body: JSON.stringify({
+                    vehicle_id: vehicle,
+                    user_id: user
+                })
             });
 
             if (!response.ok) {
@@ -42,28 +49,23 @@ const QRScanner = () => {
 
             const result = await response.json();
 
-            if (result.isVehicleParked && result.isDriverParked) {
-                // Fetch parking instance ID
-                const parkingInstanceResponse = await fetch(`http://172.20.10.3:5000/get-parking-instance/`);
-                
-                if (!parkingInstanceResponse.ok) {
-                    throw new Error('Failed to fetch parking instance');
-                }
+            console.log('Parking status response:', result);
 
-                const parkingInstance = await parkingInstanceResponse.json();
-
-                // Redirect to the view vehicle page with parking instance ID
-                router.push(`(routes)/viewParkedVehicle/index/${parkingInstance.instance_id}`);
-            } else {
+            if (!result.isVehicleParked && !result.isDriverParked) {
                 setIsAllowedToPark(true);
+                console.log('Parking is allowed');
+            } else {
+                setIsAllowedToPark(false);
+                console.log('One or both are already parked:', result);
+                Alert.alert('Error', 'One or both are already parked');
             }
         } catch (error) {
             console.error('Error during parking status check:', error);
             if (error instanceof Error) {
                 Alert.alert('Error', error.message);
-              } else {
+            } else {
                 Alert.alert('Error', 'An unknown error occurred');
-              }
+            }
         }
     };
 
@@ -84,7 +86,8 @@ const QRScanner = () => {
                 body: JSON.stringify({
                     vehicle_id: vehicleId,
                     driver_id: userId,
-                    user_id: user_id
+                    user_id:user_id // Include the user_id in the JSON object
+
                 })
             });
 
@@ -96,13 +99,14 @@ const QRScanner = () => {
             Alert.alert('Success', result.message);
 
             router.push('(tabs)?refresh=true');
+
         } catch (error) {
             console.error('Error during parking slot assignment:', error);
             if (error instanceof Error) {
                 Alert.alert('Error', error.message);
-              } else {
+            } else {
                 Alert.alert('Error', 'An unknown error occurred');
-              }
+            }
         }
     };
 
@@ -138,6 +142,12 @@ const QRScanner = () => {
                         value={userId}
                         editable={false}
                     />
+                    {/* <TextInput
+                        style={styles.input}
+                        placeholder="Enter Parking Slot ID"
+                        value={parkingSlotId}
+                        onChangeText={(text) => setParkingSlotId(text)}
+                    /> */}
                     <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
                         <Text style={styles.confirmButtonText}>Confirm</Text>
                     </TouchableOpacity>
@@ -167,6 +177,10 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: 'white',
     },
+    scanResult: {
+        fontSize: 16,
+        color: 'black',
+    },
     scanAgainButton: {
         alignSelf: 'center',
         padding: 10,
@@ -194,7 +208,6 @@ const styles = StyleSheet.create({
 });
 
 export default QRScanner;
-
 
 
 
