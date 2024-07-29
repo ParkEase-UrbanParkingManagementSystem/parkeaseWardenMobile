@@ -25,52 +25,27 @@ export default function ViewParkedVehicleScreen() {
     return null; // Return loading indicator or null if fonts are not loaded or vehicle data is not available
   }
 
-  // const handleExitConfirm = () => {
-  //   console.log("Exiting vehicle confirmed");
-  //   setModalVisible(false);
-  //   const currentTime = new Date().toISOString(); // Get the current time as ISO string
-  //   router.push({
-  //     pathname: "/(routes)/checkout",
-  //     params: { 
-  //       vehicle: JSON.stringify({ 
-  //         ...parsedVehicle, 
-  //         outTime: currentTime // Add the current time as out time 
-  //       }) 
-  //     },
-  //   });
-  //   // Implement your exit vehicle logic here
-  // };
-
-
   const handleExitConfirm = () => {
     console.log("Exiting vehicle confirmed");
 
-    // Get the current time as a Date object
     const currentTime1 = new Date();
-    const currentTime = currentTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',hour12: true });
-    // Format the current time as 'hh:mm a'
-    // const currentTime = format(currentTime1, 'hh:mm a');
-    
-    // Create the object with updated vehicle data
+    const currentTime = currentTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
     const updatedVehicleData = {
         ...parsedVehicle,
-        outTime: currentTime // Add the current time as out time
+        outTime: currentTime
     };
 
-    // Log the updated vehicle data to ensure correctness
     console.log('Updated Vehicle Data:', updatedVehicleData);
 
-    // Validate the updated vehicle data (optional but recommended)
     const isValid = validateVehicleData(updatedVehicleData);
     if (!isValid) {
         console.error('Invalid vehicle data, cannot navigate to CheckoutScreen');
         return;
     }
 
-    // Close the modal
     setModalVisible(false);
 
-    // Navigate to CheckoutScreen with the updated vehicle data
     router.push({
         pathname: "/(routes)/checkout",
         params: {
@@ -79,11 +54,6 @@ export default function ViewParkedVehicleScreen() {
     });
 };
 
-// Basic validation function for vehicle data
-// const validateVehicleData = (data: { number: any; parkingId: any; driverId: any; outTime: any; }) => {
-//     return data && data.number && data.parkingId && data.driverId && data.outTime;
-// };
-// Basic validation function for vehicle data
 const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any; driver_name: any; outTime: any; }) => {
   return data &&
     data.vehicle_number &&
@@ -92,14 +62,9 @@ const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any;
     data.outTime;
 };
 
-
-
-
-
   const handleExitCancel = () => {
     console.log("Exiting vehicle canceled");
     setModalVisible(false);
-    // Implement cancel logic here
   };
 
   return (
