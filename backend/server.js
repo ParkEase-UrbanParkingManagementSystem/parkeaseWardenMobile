@@ -453,30 +453,7 @@ app.post('/exit-vehicle', async (req, res) => {
 
 
 
-// Endpoint to get parking instance
-app.get('/get-parking-instance/', async (req, res) => {
-  const { vehicle_id, user_id } = req.params;
 
-  try {
-      const query = `
-          SELECT pi.instance_id
-          FROM parking_instance pi
-          JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
-          WHERE dv.vehicle_id = $1 AND dv.driver_id = $2 AND pi.out_time IS NULL;
-      `;
-      const values = [vehicle_id, user_id];
-      const result = await pool.query(query, values);
-
-      if (result.rows.length > 0) {
-          res.json({ instance_id: result.rows[0].instance_id });
-      } else {
-          res.status(404).json({ message: 'No parking instance found' });
-      }
-  } catch (error) {
-      console.error('Error fetching parking instance:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
 
 
 
