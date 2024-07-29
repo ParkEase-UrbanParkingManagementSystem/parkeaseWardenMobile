@@ -1,13 +1,23 @@
+//viewParkedVehicleScreen.tsx both qr and home
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Modal, TouchableHighlight } from "react-native";
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, router } from 'expo-router';
 import { useFonts, Raleway_700Bold } from "@expo-google-fonts/raleway";
 import colors from "../../../constants/Colors";
-// import { format } from 'date-fns';
+import { useRoute } from '@react-navigation/native';
 
 export default function ViewParkedVehicleScreen() {
-  const { vehicle } = useLocalSearchParams();
-  const parsedVehicle = vehicle && typeof vehicle === 'string' ? JSON.parse(vehicle) : null;
+  const route = useRoute();
+  const params = useLocalSearchParams();
+
+  // Prioritize vehicle over params.data
+  const vehicleData = typeof params.vehicle === 'string' ? JSON.parse(params.vehicle) : null;
+  const data = typeof params.data === 'string' ? JSON.parse(params.data) : null;
+
+  // Use vehicleData if available, otherwise use data
+  const parsedData = vehicleData || data;
+
+  console.log('Parsed Data:', parsedData);
 
   const [fontsLoaded] = useFonts({
     Raleway_700Bold,
@@ -16,12 +26,12 @@ export default function ViewParkedVehicleScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    if (parsedVehicle) {
-      console.log('Vehicle data:', parsedVehicle);
+    if (parsedData) {
+      console.log('Vehicle data:', parsedData);
     }
-  }, [parsedVehicle]);
+  }, [parsedData]);
 
-  if (!fontsLoaded || !parsedVehicle) {
+  if (!fontsLoaded || !parsedData) {
     return null; // Return loading indicator or null if fonts are not loaded or vehicle data is not available
   }
 
@@ -32,7 +42,7 @@ export default function ViewParkedVehicleScreen() {
     const currentTime = currentTime1.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
     const updatedVehicleData = {
-        ...parsedVehicle,
+        ...parsedData,
         outTime: currentTime
     };
 
@@ -52,15 +62,15 @@ export default function ViewParkedVehicleScreen() {
           vehicle: JSON.stringify(updatedVehicleData)
         },
     });
-};
+  };
 
-const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any; driver_name: any; outTime: any; }) => {
-  return data &&
-    data.vehicle_number &&
-    data.parking_lot_name &&
-    data.driver_name &&
-    data.outTime;
-};
+  const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any; driver_name: any; outTime: any; }) => {
+    return data &&
+      data.vehicle_number &&
+      data.parking_lot_name &&
+      data.driver_name &&
+      data.outTime;
+  };
 
   const handleExitCancel = () => {
     console.log("Exiting vehicle canceled");
@@ -73,53 +83,48 @@ const validateVehicleData = (data: { vehicle_number: any; parking_lot_name: any;
         <Image
           style={styles.vehicleImage}
           source={
-            // parsedVehicle.vehicle_type_name === 'Bike' ? require('@/assets/icons/bike.png') : require('@/assets/icons/car.png')}
-            parsedVehicle.vehicle_type_name === 'Car'
+            parsedData.vehicle_type_name === 'Car'
                       ? require('@/assets/icons/car.png')
-                      : parsedVehicle.vehicle_type_name === 'Bike'
+                      : parsedData.vehicle_type_name === 'Bike'
                       ? require('@/assets/icons/bike.png')
-                      : parsedVehicle.vehicle_type_name === 'Large Vehicle'
+                      : parsedData.vehicle_type_name === 'Large Vehicle'
                       ? require('@/assets/icons/largeVehicle.png')
-                      : parsedVehicle.vehicle_type_name === 'Threewheeler'
+                      : parsedData.vehicle_type_name === 'Threewheeler'
                       ? require('@/assets/icons/tuk-tuk.png')
                       : require('@/assets/icons/bike.png')
           }
-            />
-        <Text style={[styles.vehicleNumber, { fontFamily: "Raleway_700Bold" }]}>{parsedVehicle.vehicle_number}</Text>
+        />
+        <Text style={[styles.vehicleNumber, { fontFamily: "Raleway_700Bold" }]}>{parsedData.vehicle_number}</Text>
       </View>
 
       <View style={styles.detailsContainer}>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Location</Text>
-          <Text style={styles.value}>{parsedVehicle.parking_lot_name}</Text>
+          <Text style={styles.value}>{parsedData.parking_lot_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Vehicle Type</Text>
-          <Text style={styles.value}>{parsedVehicle.vehicle_type_name}</Text>
+          <Text style={styles.value}>{parsedData.vehicle_type_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>In Time</Text>
-          <Text style={[styles.value, styles.highlight]}>{new Date(parsedVehicle.in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
+          <Text style={[styles.value, styles.highlight]}>{new Date(parsedData.in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Date</Text>
-          <Text style={styles.value}>{new Date(parsedVehicle.in_time).toLocaleDateString()}</Text>
+          <Text style={styles.value}>{new Date(parsedData.in_time).toLocaleDateString()}</Text>
         </View>
-        {/* <View style={styles.detailRow}> */}
-          {/* <Text style={styles.label}>Parking ID</Text> */}
-          {/* <Text style={styles.value}>{parsedVehicle.instance_id}</Text> */}
-        {/* </View> */}
         <View style={styles.detailRow}>
           <Text style={styles.label}>Driver Name</Text>
-          <Text style={styles.value}>{parsedVehicle.driver_name}</Text>
+          <Text style={styles.value}>{parsedData.driver_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Slots Allocated</Text>
-          <Text style={styles.value}>{parsedVehicle.slotsAllocated}</Text>
+          <Text style={styles.value}>{parsedData.slotsAllocated}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Warden Name</Text>
-          <Text style={styles.value}>{parsedVehicle.warden_name}</Text>
+          <Text style={styles.value}>{parsedData.warden_name}</Text>
         </View>
       </View>
 
@@ -234,17 +239,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Transparent black background
   },
   modalView: {
+    margin: 20,
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 20,
+    padding: 35,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -252,29 +257,25 @@ const styles = StyleSheet.create({
       height: 2
     },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 5
   },
   modalText: {
-    marginBottom: 20,
+    marginBottom: 15,
     textAlign: "center",
     fontSize: 18,
   },
   modalButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
   },
   modalButton: {
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
+    padding: 10,
     elevation: 2,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
   },
   modalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold",
   },
 });

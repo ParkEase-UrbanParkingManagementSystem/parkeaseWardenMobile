@@ -282,7 +282,7 @@ export default function LoginScreen() {
                                     </Text>
                                 </View>
                             )}
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 onPress={() => router.push("/(routes)/forgot-password")}
                             >
                                 <Text
@@ -293,15 +293,16 @@ export default function LoginScreen() {
                                 >
                                     Forgot Password?
                                 </Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                             <TouchableOpacity
                                 style={{
                                     padding: 16,
                                     borderRadius: 8,
                                     marginHorizontal: 16,
-                                    marginTop: 15,
+                                    marginTop: 40,
                                     backgroundColor: "rgba(26, 33, 49, 1)",
+                                    marginBottom: 20,
                                 }}
                                 onPress={handleSignIn}
                             >
@@ -330,15 +331,15 @@ export default function LoginScreen() {
                                     gap: 10,
                                 }}
                             >
-                                <TouchableOpacity>
+                                {/* <TouchableOpacity>
                                     <FontAwesome name="google" size={30} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
+                                </TouchableOpacity> */}
+                                {/* <TouchableOpacity>
                                     <FontAwesome name="github" size={30} />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
 
-                            <View style={styles.signupRedirect}>
+                            {/* <View style={styles.signupRedirect}>
                                 <Text style={{ fontSize: 18, fontFamily: "Raleway_600SemiBold" }}>
                                     Don't have an account?
                                 </Text>
@@ -356,7 +357,7 @@ export default function LoginScreen() {
                                         Sign Up
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
+                            </View> */}
                         </View>
                     </View>
                 </ScrollView>
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
         width: "80%",
         height: 250,
         alignSelf: "center",
-        marginTop: 25,
+        marginTop: 70,
         marginBottom: 25,
     },
     welcomeText: {
