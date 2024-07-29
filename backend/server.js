@@ -67,42 +67,42 @@ app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-      console.log('Querying database for user with email:', email);  // Log email before querying
-      const userQuery = 'SELECT * FROM users WHERE email = $1';
-      const userResult = await pool.query(userQuery, [email]);
+    console.log('Querying database for user with email:', email);  // Log email before querying
+    const userQuery = 'SELECT * FROM users WHERE email = $1';
+    const userResult = await pool.query(userQuery, [email]);
 
-      if (userResult.rows.length === 0) {
-          console.log('User not found for email:', email);
-          return res.status(400).json({ message: 'User not found' });
-      }
+    if (userResult.rows.length === 0) {
+      console.log('User not found for email:', email);
+      return res.status(400).json({ message: 'User not found' });
+    }
 
-      const user = userResult.rows[0];
-      console.log('User found:', user); // Log the found user
+    const user = userResult.rows[0];
+    console.log('User found:', user); // Log the found user
 
-      const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-      if (!isMatch) {
-          console.log('Invalid credentials for email:', email);
-          return res.status(400).json({ message: 'Invalid credentials' });
-      }
+    if (!isMatch) {
+      console.log('Invalid credentials for email:', email);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
-      // Check if the user's role_id is 3
-      if (user.role_id !== 3) {
-          console.log('Unauthorized role_id for email:', email);
-          return res.status(403).json({ message: 'Unauthorized role' });
-      }
+    // Check if the user's role_id is 3
+    if (user.role_id !== 3) {
+      console.log('Unauthorized role_id for email:', email);
+      return res.status(403).json({ message: 'Unauthorized role' });
+    }
 
-      const tokenPayload = { userId: user.user_id };
-      console.log('Token Payload:', tokenPayload); // Log the payload
+    const tokenPayload = { userId: user.user_id };
+    console.log('Token Payload:', tokenPayload); // Log the payload
 
-      const token = jwt.sign(tokenPayload, 'your_jwt_secret', {
-          expiresIn: '1h',
-      });
+    const token = jwt.sign(tokenPayload, 'your_jwt_secret', {
+      expiresIn: '1h',
+    });
 
-      res.json({ token, user });
+    res.json({ token, user });
   } catch (err) {
-      console.error('Login error:', err.message);
-      res.status(500).send('Server error');
+    console.error('Login error:', err.message);
+    res.status(500).send('Server error');
   }
 });
 
@@ -198,8 +198,8 @@ app.post('/check-parking-status', async (req, res) => {
 
 //assign parking endpoint
 app.post('/assign-parking', async (req, res) => {
-  const { vehicle_id, driver_id ,user_id} = req.body;
-console.log('userissdddd:', user_id);
+  const { vehicle_id, driver_id, user_id } = req.body;
+  console.log('userissdddd:', user_id);
 
   try {
     console.log('userissdddd:', user_id);
@@ -223,7 +223,7 @@ console.log('userissdddd:', user_id);
     const lot_id = resultGetLotId.rows[0].lot_id;
     console.log('lot_id of particular bla bla:', lot_id);
 
-    
+
     const driverVehicleQuery = `
           SELECT driver_vehicle_id 
           FROM driver_vehicle 
@@ -248,19 +248,233 @@ console.log('userissdddd:', user_id);
       UPDATE vehicle SET isparked = true WHERE vehicle_id = $1;
       `;
     await pool.query(updateVehicleTable, [vehicle_id]);
-console.log('update isp arked in vehicle batblr:', vehicle_id);
+    console.log('update isp arked in vehicle batblr:', vehicle_id);
 
     const updateDriverTable = `
       UPDATE driver SET isparked = true WHERE driver_id = $1;
       `;
     await pool.query(updateDriverTable, [driver_id]);
-console.log('update isparked in driver table:', driver_id);
+    console.log('update isparked in driver table:', driver_id);
 
 
     res.status(200).json({ message: 'Parking slot assigned successfully' });
   } catch (error) {
     console.error('Error assigning parking slot:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+
+// //fetching parked vehicles endpoint
+// app.get('/fetch_parked_vehicles', async (req, res) => {
+//   const { user_id } = req.query;
+
+//   console.log('user_id in fetching dataaaaaaaaaaaaaaaa:');
+//   try {
+//     const getWardenId = `
+//           SELECT warden_id 
+//           FROM warden 
+//           WHERE user_id = $1 ;
+//         `;
+//     const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+//     if (resultGetWardenId.rows.length === 0) {
+//       return res.status(404).json({ message: 'Warden not found' });
+//     }
+//     const warden_id = resultGetWardenId.rows[0].warden_id;
+//     console.log('warden_id of particular bla bla:', warden_id);
+
+//     // const parkigInstances =await pool.query('SELECT * FROM parking_instance WHERE warden_id = $1 AND out_time is NULL' ,
+//     //    [warden_id]);
+//     const parkingInstancesQuery = `
+//       SELECT * 
+//       FROM parking_instance 
+//       WHERE warden_id = $1 AND out_time IS NULL;
+//     `;
+//     const resultParkingInstances = await pool.query(parkingInstancesQuery, [warden_id]);
+//     console.log('resultParkingInstances:', resultParkingInstances.rows);
+
+//     if (resultParkingInstances.rows.length === 0) {
+//       return res.status(404).json({ message: 'No parking instances found' });
+//     }
+//     res.json(resultParkingInstances.rows);
+//   } catch (error) {
+//     console.error('Error fetchinggggg data:', error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+
+// app.get('/fetch_parked_vehicles', async (req, res) => {
+//   const { user_id } = req.query;
+
+//   try {
+//     // Get warden_id from user_id
+//     const getWardenId = `
+//       SELECT warden_id 
+//       FROM warden 
+//       WHERE user_id = $1;
+//     `;
+//     const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+//     if (resultGetWardenId.rows.length === 0) {
+//       return res.status(404).json({ message: 'Warden not found' });
+//     }
+//     const warden_id = resultGetWardenId.rows[0].warden_id;
+
+//     // Fetch parking instances with vehicle details
+//     const parkingInstancesQuery = `
+//       SELECT 
+//         pi.instance_id,
+//         pi.in_time,
+//         pi.out_time,
+//         pi.toll_amount,
+//         v.vehicle_number,
+//         vt.type_name AS vehicle_type_name
+//       FROM parking_instance pi
+//       JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+//       JOIN vehicle v ON dv.vehicle_id = v.vehicle_id
+//       JOIN vehicle_type vt ON v.type_id = vt.vehicle_type_id
+//       WHERE pi.warden_id = $1 AND pi.out_time IS NULL
+//        ORDER BY pi.in_time DESC;
+//     `;
+//     const resultParkingInstances = await pool.query(parkingInstancesQuery, [warden_id]);
+
+//     if (resultParkingInstances.rows.length === 0) {
+//       return res.status(404).json({ message: 'No parking instances found' });
+//     }
+//     res.json(resultParkingInstances.rows);
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+
+app.get('/fetch_parked_vehicles', async (req, res) => {
+  const { user_id } = req.query;
+
+  console.log('user_id in fetching data:', user_id);
+  try {
+    // Get the warden_id from the user_id
+    const getWardenId = `
+      SELECT warden_id 
+      FROM warden 
+      WHERE user_id = $1;
+    `;
+    const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+    if (resultGetWardenId.rows.length === 0) {
+      return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_id = resultGetWardenId.rows[0].warden_id;
+    console.log('warden_id:', warden_id);
+
+    // Get the parked vehicles details
+    const parkingInstancesQuery = `
+      SELECT 
+        pi.instance_id,
+        pi.in_time,
+        pi.out_time,
+        pi.toll_amount,
+        pi.transaction_id,
+        pi.driver_vehicle_id,
+        pi.slot_id,
+        pi.lot_id,
+        pi.warden_id,
+        vt.type_name AS vehicle_type_name,
+        v.vehicle_number,
+        pl.name AS parking_lot_name,
+        d.fname AS driver_fname,
+        d.lname AS driver_lname,
+        w.fname AS warden_fname,
+        w.lname AS warden_lname
+      FROM parking_instance pi
+      JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+      JOIN vehicle v ON dv.vehicle_id = v.vehicle_id
+      JOIN vehicle_type vt ON v.type_id = vt.vehicle_type_id
+      JOIN parking_lot pl ON pi.lot_id = pl.lot_id
+      JOIN driver d ON dv.driver_id = d.driver_id
+      JOIN warden w ON pi.warden_id = w.warden_id
+      WHERE pi.warden_id = $1 AND pi.out_time IS NULL
+      ORDER BY pi.in_time DESC;
+    `;
+    const resultParkingInstances = await pool.query(parkingInstancesQuery, [warden_id]);
+    console.log('resultParkingInstances:', resultParkingInstances.rows);
+
+    if (resultParkingInstances.rows.length === 0) {
+      return res.status(404).json({ message: 'No parking instances found' });
+    }
+
+    // Map the results to include full driver and warden names
+    const response = resultParkingInstances.rows.map(instance => ({
+      ...instance,
+      driver_name: `${instance.driver_fname} ${instance.driver_lname}`,
+      warden_name: `${instance.warden_fname} ${instance.warden_lname}`
+    }));
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+app.post('/exit-vehicle', async (req, res) => {
+  const { instance_id, amount } = req.body;
+  const out_time = new Date().toISOString(); // Convert to ISO 8601 format
+
+  try {
+    const query = `
+      UPDATE parking_instance 
+      SET out_time = $2, toll_amount = $3
+      WHERE instance_id = $1
+      RETURNING *;
+    `;
+    const values = [instance_id, out_time, amount];
+    const result = await pool.query(query, values);
+
+    if (result.rows.length > 0) {
+      // Update vehicle and driver tables
+      const instance = result.rows[0];
+      await pool.query('UPDATE vehicle SET isparked = false WHERE vehicle_id = (SELECT vehicle_id FROM driver_vehicle WHERE driver_vehicle_id = $1)', [instance.driver_vehicle_id]);
+      await pool.query('UPDATE driver SET isparked = false WHERE driver_id = (SELECT driver_id FROM driver_vehicle WHERE driver_vehicle_id = $1)', [instance.driver_vehicle_id]);
+
+      res.status(200).json({ message: 'Vehicle exited successfully', data: result.rows[0] });
+    } else {
+      res.status(404).json({ error: 'Parking instance not found' });
+    }
+  } catch (error) {
+    console.error('Error exiting vehicle:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+// Endpoint to get parking instance
+app.get('/get-parking-instance/', async (req, res) => {
+  const { vehicle_id, user_id } = req.params;
+
+  try {
+      const query = `
+          SELECT pi.instance_id
+          FROM parking_instance pi
+          JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+          WHERE dv.vehicle_id = $1 AND dv.driver_id = $2 AND pi.out_time IS NULL;
+      `;
+      const values = [vehicle_id, user_id];
+      const result = await pool.query(query, values);
+
+      if (result.rows.length > 0) {
+          res.json({ instance_id: result.rows[0].instance_id });
+      } else {
+          res.status(404).json({ message: 'No parking instance found' });
+      }
+  } catch (error) {
+      console.error('Error fetching parking instance:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -280,6 +494,9 @@ app.get('/get-warden-name/:user_id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
 
 
 app.listen(PORT, '0.0.0.0', () => {
