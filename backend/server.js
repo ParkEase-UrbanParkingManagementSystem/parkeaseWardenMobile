@@ -453,7 +453,30 @@ app.post('/exit-vehicle', async (req, res) => {
 
 
 
+// Endpoint to get parking instance
+app.get('/get-parking-instance/', async (req, res) => {
+  const { vehicle_id, user_id } = req.params;
 
+  try {
+      const query = `
+          SELECT pi.instance_id
+          FROM parking_instance pi
+          JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+          WHERE dv.vehicle_id = $1 AND dv.driver_id = $2 AND pi.out_time IS NULL;
+      `;
+      const values = [vehicle_id, user_id];
+      const result = await pool.query(query, values);
+
+      if (result.rows.length > 0) {
+          res.json({ instance_id: result.rows[0].instance_id });
+      } else {
+          res.status(404).json({ message: 'No parking instance found' });
+      }
+  } catch (error) {
+      console.error('Error fetching parking instance:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 
 
@@ -471,6 +494,176 @@ app.get('/get-warden-name/:user_id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+// app.get('/exit-from-qr', async (req, res) => {
+//   const { vehicle_id, driver_id , user_id } = req.query;
+// console.log('in exit from qr vehicle id:',vehicle_id);
+// console.log('in exit from qr driver id:',driver_id);
+// // console.log('in exit from qr warden_user_id:',warden_user_id);
+
+//   try {
+//     console.log('in exit from qrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
+
+//     const driverVehicleQuery = `
+//     SELECT driver_vehicle_id 
+//     FROM driver_vehicle 
+//     WHERE vehicle_id = $1 AND driver_id = $2;
+//   `;
+
+//     // Execute the query to get driver_vehicle_id
+//     const result1 = await pool.query(driverVehicleQuery, [vehicle_id, driver_id]);
+//     console.log('Query Result:', result1.rows);
+//     const driver_vehicle_id = result1.rows[0].driver_vehicle_id;
+//     console.log("driver_vehicle_iddddd",driver_vehicle_id); //done
+
+//     //get warden id
+//     const getWardenId = `
+//       SELECT warden_id 
+//       FROM warden 
+//       WHERE user_id = $1;
+//     `;
+//     const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+//     if (resultGetWardenId.rows.length === 0) {
+//       return res.status(404).json({ message: 'Warden not found' });
+//     }
+//     const warden_id = resultGetWardenId.rows[0].warden_id;
+//     console.log('warden_id:', warden_id); //done
+
+//     // Query to fetch details
+//     const query = `
+//       SELECT 
+//         pi.instance_id,
+//         pi.in_time,
+//         pi.out_time,
+//         pi.toll_amount,
+//         pi.transaction_id,
+//         pi.driver_vehicle_id,
+//         pi.slot_id,
+//         pi.lot_id,
+//         pi.warden_id,
+//         vt.type_name AS vehicle_type_name,
+//         v.vehicle_number,
+//         pl.name AS parking_lot_name,
+//         d.fname AS driver_fname,
+//         d.lname AS driver_lname,
+//         w.fname AS warden_fname,
+//         w.lname AS warden_lname
+//       FROM parking_instance pi
+//       JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+//       JOIN vehicle v ON dv.vehicle_id = v.vehicle_id
+//       JOIN vehicle_type vt ON v.type_id = vt.vehicle_type_id
+//       JOIN parking_lot pl ON pi.lot_id = pl.lot_id
+//       JOIN driver d ON dv.driver_id = d.driver_id
+//       JOIN warden w ON pi.warden_id = w.warden_id
+//       WHERE pi.warden_id = $1 AND pi.out_time IS NULL
+//       AND pi.driver_vehicle_id = $2;
+//     `;
+
+//     const result = await pool.query(query, [warden_id,driver_vehicle_id]);
+
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({ message: 'No details found for the given driver_vehicle_id' });
+//     }
+// console.log('result.rowssssssssssssssssssssssssssssssssssssssssssssssssssssssss');
+//     console.log('Query Result:', result.rows[0]);
+//   // Map the results to include full driver and warden names
+//   // const response = result.rows.map(instance => ({
+//   //   ...instance,
+//   //   driver_name: `${instance.driver_fname} ${instance.driver_lname}`,
+//   //   warden_name: `${instance.warden_fname} ${instance.warden_lname}`
+//   // }));
+//   // res.json(response);
+//     res.json(result.rows[0]);
+//   } catch (error) {
+//     console.error('Error fetching vehicle details:', error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+
+
+
+app.get('/exit-from-qr', async (req, res) => {
+  const { vehicle_id, driver_id , user_id } = req.query;
+console.log('in exit from qr vehicle id:',vehicle_id);
+console.log('in exit from qr driver id:',driver_id);
+// console.log('in exit from qr warden_user_id:',warden_user_id);
+
+  try {
+    console.log('in exit from qrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
+
+    const driverVehicleQuery = `
+    SELECT driver_vehicle_id 
+    FROM driver_vehicle 
+    WHERE vehicle_id = $1 AND driver_id = $2;
+  `;
+
+    // Execute the query to get driver_vehicle_id
+    const result1 = await pool.query(driverVehicleQuery, [vehicle_id, driver_id]);
+    console.log('Query Result:', result1.rows);
+    const driver_vehicle_id = result1.rows[0].driver_vehicle_id;
+    console.log("driver_vehicle_iddddd",driver_vehicle_id); //done
+
+    //get warden id
+    const getWardenId = `
+      SELECT warden_id 
+      FROM warden 
+      WHERE user_id = $1;
+    `;
+    const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+    if (resultGetWardenId.rows.length === 0) {
+      return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_id = resultGetWardenId.rows[0].warden_id;
+    console.log('warden_id:', warden_id); //done
+
+    // Query to fetch details
+    const query = `
+    SELECT 
+      pi.instance_id,
+      pi.in_time,
+      pi.out_time,
+      pi.toll_amount,
+      pi.transaction_id,
+      pi.driver_vehicle_id,
+      pi.slot_id,
+      pi.lot_id,
+      pi.warden_id,
+      vt.type_name AS vehicle_type_name,
+      v.vehicle_number,
+      pl.name AS parking_lot_name,
+      CONCAT(d.fname, ' ', d.lname) AS driver_name, -- Concatenate driver first and last name
+      CONCAT(w.fname, ' ', w.lname) AS warden_name  -- Concatenate warden first and last name
+    FROM parking_instance pi
+    JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
+    JOIN vehicle v ON dv.vehicle_id = v.vehicle_id
+    JOIN vehicle_type vt ON v.type_id = vt.vehicle_type_id
+    JOIN parking_lot pl ON pi.lot_id = pl.lot_id
+    JOIN driver d ON dv.driver_id = d.driver_id
+    JOIN warden w ON pi.warden_id = w.warden_id
+    WHERE pi.warden_id = $1 
+      AND pi.out_time IS NULL
+      AND pi.driver_vehicle_id = $2;
+  `;
+  
+  const result = await pool.query(query, [warden_id, driver_vehicle_id]);
+  
+  if (result.rows.length === 0) {
+    return res.status(404).json({ message: 'No details found for the given driver_vehicle_id' });
+  }
+  
+  console.log('Query Result:', result.rows[0]);
+  res.json(result.rows[0]);
+  
+  } catch (error) {
+    console.error('Error fetching vehicle details:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 
 
 
