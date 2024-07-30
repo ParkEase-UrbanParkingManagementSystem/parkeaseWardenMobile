@@ -36,7 +36,7 @@ const HomeScreen = () => {
     setError(null);
     try {
       const user_id = await AsyncStorage.getItem('user_id');
-      const response = await axios.get('http://172.20.10.3:5000/fetch_parked_vehicles', {
+      const response = await axios.get('http://192.168.8.198:5003/fetch_parked_vehicles', {
         params: { user_id },
       });
 

@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5003;
 
 console.log('Server script started'); // Initial log to confirm script execution
 
@@ -649,6 +649,8 @@ console.log('in exit from qr driver id:',driver_id);
   `;
   
   const result = await pool.query(query, [warden_id, driver_vehicle_id]);
+
+  console.log("magulaaaaa",result.rows)
   
   if (result.rows.length === 0) {
     return res.status(404).json({ message: 'No details found for the given driver_vehicle_id' });

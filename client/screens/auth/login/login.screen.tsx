@@ -101,7 +101,7 @@ export default function LoginScreen() {
     //     setButtonSpinner(true);
     //     try {
     //         // localhost
-    //         const res = await axios.post('http://172.20.10.3:5000/login', { 
+    //         const res = await axios.post('http://192.168.8.198:5003/login', { 
     //             email,
     //             password,
     //         });
@@ -124,7 +124,7 @@ export default function LoginScreen() {
     const handleSignIn = () => {
         setButtonSpinner(true); // Set loading state, if needed
     
-        axios.post('http://172.20.10.3:5000/login', {
+        axios.post('http://192.168.8.198:5003/login', {
             email,
             password
         })

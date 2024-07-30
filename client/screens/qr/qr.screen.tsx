@@ -45,7 +45,7 @@ const QRScanner = () => {
         setUserId(user);
 
         try {
-            const response = await fetch('http://172.20.10.3:5000/check-parking-status', {
+            const response = await fetch('http://192.168.8.198:5003/check-parking-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ const QRScanner = () => {
             try {
                 const user_id = await AsyncStorage.getItem('user_id');
 
-                const response = await fetch('http://172.20.10.3:5000/assign-parking', {
+                const response = await fetch('http://192.168.8.198:5003/assign-parking', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -114,7 +114,7 @@ const QRScanner = () => {
             try {
                 const user_id = await AsyncStorage.getItem('user_id');
 
-                    const response = await axios.get('http://172.20.10.3:5000/exit-from-qr', {
+                    const response = await axios.get('http://192.168.8.198:5003/exit-from-qr', {
                         params: { vehicle_id: vehicleId, driver_id: userId, user_id: user_id},
                       });
 
@@ -302,7 +302,7 @@ export default QRScanner;
 //         setUserId(user);
 
 //         try {
-//             const response = await fetch('http://172.20.10.3:5000/check-parking-status', {
+//             const response = await fetch('http://192.168.8.198:5003/check-parking-status', {
 //                 method: 'POST',
 //                 headers: {
 //                     'Content-Type': 'application/json'
@@ -337,7 +337,7 @@ export default QRScanner;
 
 //     const handleConfirm = async () => {
 //         try {
-//             const response = await fetch('http://172.20.10.3:5000/assign-parking', {
+//             const response = await fetch('http://192.168.8.198:5003/assign-parking', {
 //                 method: 'POST',
 //                 headers: {
 //                     'Content-Type': 'application/json'
@@ -502,7 +502,7 @@ export default QRScanner;
 
 //     const handleConfirm = async () => {
 //         try {
-//             const response = await fetch('http://172.20.10.3:5000/assign-parking', {
+//             const response = await fetch('http://192.168.8.198:5003/assign-parking', {
 //                 method: 'POST',
 //                 headers: {
 //                     'Content-Type': 'application/json'

@@ -61,7 +61,7 @@ export default function CheckoutScreen() {
 
   const handleExitVehicle = async () => {
     try {
-      const response = await axios.post('http://172.20.10.3:5000/exit-vehicle', {
+      const response = await axios.post('http://192.168.8.198:5003/exit-vehicle', {
         instance_id: parsedVehicle.instance_id,
         amount: totalFee,
         out_time: parsedVehicle.outTime

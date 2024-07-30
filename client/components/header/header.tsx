@@ -20,7 +20,7 @@ export default function Header() {
 
         if (user_id) {
           console.log('Making API call to fetch warden name');
-          const response = await axios.get(`http://172.20.10.3:5000/get-warden-name/${user_id}`);
+          const response = await axios.get(`http://192.168.8.198:5003/get-warden-name/${user_id}`);
           console.log('API response:', response.data);
 
           setWardenName(response.data.wardenName);
