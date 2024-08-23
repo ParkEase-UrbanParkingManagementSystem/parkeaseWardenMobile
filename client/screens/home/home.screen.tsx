@@ -15,9 +15,9 @@ type Vehicle = {
   instance_id: string;
   lot_id: string;
   out_time: string | null;
-  slot_id: string | null;
+  
   toll_amount: number | null;
-  transaction_id: string | null;
+  
   warden_id: string;
   vehicle_number: string;
   vehicle_type_name: string;
@@ -30,6 +30,9 @@ const HomeScreen = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [wardenAssigned, setWardenAssigned] = useState(false);
+
+  
 
   const fetchData = async () => {
     setLoading(true);
@@ -39,8 +42,14 @@ const HomeScreen = () => {
       const response = await axios.get('http://192.168.8.198:5003/fetch_parked_vehicles', {
         params: { user_id },
       });
-
-      setVehicles(response.data);
+  
+      const { is_assigned, parked_vehicles } = response.data;
+  
+      // Handle the assignment status and vehicle data as needed
+      console.log('Is Warden Assigned:', is_assigned);
+      setVehicles(parked_vehicles);
+      setWardenAssigned(is_assigned); // Set wardenAssigned state based on response
+  
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
@@ -48,6 +57,8 @@ const HomeScreen = () => {
       setLoading(false);
     }
   };
+  
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -57,63 +68,73 @@ const HomeScreen = () => {
 
   return (
     <LinearGradient colors={[colors.background, "white"]} style={{ flex: 1, paddingTop: 0 }}>
-      <Header />
-      <Animated.View entering={FadeInRight} exiting={FadeOutRight}>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/qr")} style={styles.qrbutton}>
-          <View style={[styles.view1]}>
-            <Image style={styles.image} source={require("@/assets/icons/images.png")} />
-            <Text style={[styles.scanQRtext, { fontFamily: "Raleway_700Bold" }]}>Scan QR Code</Text>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-      <View style={[styles.view2]}>
-        <TouchableOpacity onPress={() => router.push("/(routes)/addVehicle")} style={styles.addvehiclebutton}>
-          <Text style={[styles.addVehicletext, { fontFamily: "Raleway_700Bold" }]}>+Add Vehicle</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={[styles.parkedVehicles, { fontFamily: "Raleway_700Bold" }]}>Parked Vehicles</Text>
-      <SearchInput homeScreen={true} />
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.container}>
-            {vehicles.length > 0 ? (
-              vehicles.map((vehicle, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => router.push({ pathname: '/(routes)/viewParkedVehicle', params: { vehicle: JSON.stringify(vehicle) } })}
-                  style={styles.vehicleTemplateBtn}
-                >
-                  <View style={styles.vehicleBox}>
-                    <View style={styles.textContainer}>
-                      <Text style={styles.vehicleNumber}>{vehicle.vehicle_number}</Text>
-                      <Text style={styles.vehicleType}>{vehicle.vehicle_type_name}</Text>
+    <Header />
+    {wardenAssigned ? (
+      <>
+        <Animated.View entering={FadeInRight} exiting={FadeOutRight}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/qr")} style={styles.qrbutton}>
+            <View style={[styles.view1]}>
+              <Image style={styles.image} source={require("@/assets/icons/images.png")} />
+              <Text style={[styles.scanQRtext, { fontFamily: "Raleway_700Bold" }]}>Scan QR Code</Text>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+        <View style={[styles.view2]}>
+          <TouchableOpacity onPress={() => router.push("/(routes)/addVehicle")} style={styles.addvehiclebutton}>
+            <Text style={[styles.addVehicletext, { fontFamily: "Raleway_700Bold" }]}>+Add Vehicle</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.parkedVehicles, { fontFamily: "Raleway_700Bold" }]}>Parked Vehicles</Text>
+        <SearchInput homeScreen={true} />
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} />
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.container}>
+              {vehicles?.length > 0 ? (
+                vehicles.map((vehicle, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => router.push({ pathname: '/(routes)/viewParkedVehicle', params: { vehicle: JSON.stringify(vehicle) } })}
+                    style={styles.vehicleTemplateBtn}
+                  >
+                    <View style={styles.vehicleBox}>
+                      <View style={styles.textContainer}>
+                        <Text style={styles.vehicleNumber}>{vehicle.vehicle_number}</Text>
+                        <Text style={styles.vehicleType}>{vehicle.vehicle_type_name}</Text>
+                      </View>
+                      <Image
+                        style={styles.vehicleIcon}
+                        source={
+                          vehicle.vehicle_type_name === 'Car'
+                            ? require('@/assets/icons/car.png')
+                            : vehicle.vehicle_type_name === 'Bike'
+                            ? require('@/assets/icons/bike.png')
+                            : vehicle.vehicle_type_name === 'Large Vehicle'
+                            ? require('@/assets/icons/largeVehicle.png')
+                            : vehicle.vehicle_type_name === 'Threewheeler'
+                            ? require('@/assets/icons/tuk-tuk.png')
+                            : require('@/assets/icons/bike.png')
+                        }
+                      />
                     </View>
-                    <Image
-                      style={styles.vehicleIcon}
-                      source={
-                        vehicle.vehicle_type_name === 'Car'
-                          ? require('@/assets/icons/car.png')
-                          : vehicle.vehicle_type_name === 'Bike'
-                          ? require('@/assets/icons/bike.png')
-                          : vehicle.vehicle_type_name === 'Large Vehicle'
-                          ? require('@/assets/icons/largeVehicle.png')
-                          : vehicle.vehicle_type_name === 'Threewheeler'
-                          ? require('@/assets/icons/tuk-tuk.png')
-                          : require('@/assets/icons/bike.png')
-                      }
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noVehiclesText}>No parked vehicles found.</Text>
-            )}
-          </View>
-        </ScrollView>
-      )}
-    </LinearGradient>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noVehiclesText}>No parked vehicles found.</Text>
+              )}
+            </View>
+          </ScrollView>
+        )}
+      </>
+    ) : (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 18, color: colors.primary, textAlign: 'center' }}>
+          You are not assigned to a parking lot.
+        </Text>
+      </View>
+    )}
+  </LinearGradient>
   );
 };
 
