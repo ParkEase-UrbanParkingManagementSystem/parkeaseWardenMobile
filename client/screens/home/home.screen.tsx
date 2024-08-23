@@ -15,9 +15,7 @@ type Vehicle = {
   instance_id: string;
   lot_id: string;
   out_time: string | null;
-  
   toll_amount: number | null;
-  
   warden_id: string;
   vehicle_number: string;
   vehicle_type_name: string;

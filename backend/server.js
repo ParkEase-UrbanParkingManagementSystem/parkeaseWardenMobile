@@ -384,21 +384,23 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
     // Get the parked vehicles details
     const parkingInstancesQuery = `
       SELECT 
-        pi.instance_id,
-        pi.in_time,
-        pi.out_time,
-        pi.toll_amount,
-        pi.method_id,
-        pi.driver_vehicle_id,
-        pi.lot_id,
-        pi.warden_id,
-        vt.type_name AS vehicle_type_name,
-        v.vehicle_number,
-        pl.name AS parking_lot_name,
-        d.fname AS driver_fname,
-        d.lname AS driver_lname,
-        w.fname AS warden_fname,
-        w.lname AS warden_lname
+    pi.instance_id,
+    pi.in_time,
+    pi.out_time,
+    pi.toll_amount,
+    pi.method_id,
+    pi.driver_vehicle_id,
+    pi.lot_id,
+    pi.warden_id,
+    vt.type_name AS vehicle_type_name,
+    v.vehicle_number,
+    v.name,
+    pl.name AS parking_lot_name,
+    d.fname AS driver_fname,
+    d.lname AS driver_lname,
+    w.fname AS warden_fname,
+    w.lname AS warden_lname,
+    ta.amount_per_vehicle AS toll_amount
       FROM parking_instance pi
       JOIN driver_vehicle dv ON pi.driver_vehicle_id = dv.driver_vehicle_id
       JOIN vehicle v ON dv.vehicle_id = v.vehicle_id
@@ -406,8 +408,10 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
       JOIN parking_lot pl ON pi.lot_id = pl.lot_id
       JOIN driver d ON dv.driver_id = d.driver_id
       JOIN warden w ON pi.warden_id = w.warden_id
+      JOIN toll_amount ta ON pi.lot_id = ta.lot_id AND vt.vehicle_type_id = ta.type_id
       WHERE pi.warden_id = $1 AND pi.out_time IS NULL
       ORDER BY pi.in_time DESC;
+
     `;
     const resultParkingInstances = await pool.query(parkingInstancesQuery, [warden_id]);
     console.log('resultParkingInstances:', resultParkingInstances.rows);
