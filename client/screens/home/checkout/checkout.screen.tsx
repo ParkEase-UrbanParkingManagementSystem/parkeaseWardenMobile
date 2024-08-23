@@ -18,6 +18,8 @@ export default function CheckoutScreen() {
       const inTime = new Date(parsedVehicle.in_time);
       const [outHours, outMinutes, outPeriod] = parsedVehicle.outTime.split(/[:\s]/);
       const outTime = new Date(inTime);
+      const toll_amount = parsedVehicle.toll_amount;
+      console.log('Toll Amount:', toll_amount);
 
       // Adjust the hours based on AM/PM period
       let hours = parseInt(outHours, 10);
@@ -40,22 +42,9 @@ export default function CheckoutScreen() {
       setRoundedDuration(`${roundedHours} hours`);
 
       // Calculate the total parking fee
-      let ratePerHour = 0;
-      switch (parsedVehicle.vehicle_type_name) {
-        case 'Car':
-          ratePerHour = 70;
-          break;
-        case 'Bike':
-        case 'Threewheeler':
-          ratePerHour = 50;
-          break;
-        case 'Large Vehicle':
-          ratePerHour = 100;
-          break;
-        default:
-          ratePerHour = 0;
-      }
-      setTotalFee(roundedHours * ratePerHour);
+      
+      
+      setTotalFee(roundedHours * toll_amount || 0);
     }
   }, [parsedVehicle]);
 
@@ -122,16 +111,19 @@ export default function CheckoutScreen() {
               <Text style={styles.additionalInfoLabel}>Vehicle Type</Text>
               <Text style={styles.additionalInfoValue}>{parsedVehicle.vehicle_type_name}</Text>
             </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.additionalInfoLabel}>Vehicle Model</Text>
+              <Text style={styles.additionalInfoValue}>{parsedVehicle.name}</Text>
+            </View>
+
             <View style={styles.infoRow}>
               <Text style={styles.additionalInfoLabel}>Driver Name</Text>
               <Text style={styles.additionalInfoValue}>{parsedVehicle.driver_name}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.additionalInfoLabel}>Warden Name</Text>
-              <Text style={styles.additionalInfoValue}>{parsedVehicle.warden_name}</Text>
-            </View>
+            
           </View>
-        </View>
+        </View> 
       </View>
       <View style={styles.checkoutInner}>
         <TouchableOpacity style={styles.exitButton} onPress={handleExitVehicle}>
