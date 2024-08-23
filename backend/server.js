@@ -369,6 +369,18 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
     const warden_id = resultGetWardenId.rows[0].warden_id;
     console.log('warden_id:', warden_id);
 
+    // Check if the warden is assigned to a parking lot
+    const checkWardenAssignmentQuery = `
+      SELECT EXISTS (
+        SELECT 1 
+        FROM warden_parking_lot 
+        WHERE warden_id = $1
+      ) AS is_assigned;
+    `;
+    const resultCheckWardenAssignment = await pool.query(checkWardenAssignmentQuery, [warden_id]);
+    const is_assigned = resultCheckWardenAssignment.rows[0].is_assigned;
+    console.log('is_assigned:', is_assigned);
+
     // Get the parked vehicles details
     const parkingInstancesQuery = `
       SELECT 
@@ -376,9 +388,8 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
         pi.in_time,
         pi.out_time,
         pi.toll_amount,
-        pi.transaction_id,
+        pi.method_id,
         pi.driver_vehicle_id,
-        pi.slot_id,
         pi.lot_id,
         pi.warden_id,
         vt.type_name AS vehicle_type_name,
@@ -402,7 +413,8 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
     console.log('resultParkingInstances:', resultParkingInstances.rows);
 
     if (resultParkingInstances.rows.length === 0) {
-      return res.status(404).json({ message: 'No parking instances found' });
+      console.log('No parking instances found');
+      return res.status(200).json({ message: 'No parking instances found', is_assigned, parked_vehicles: [] });
     }
 
     // Map the results to include full driver and warden names
@@ -412,12 +424,13 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
       warden_name: `${instance.warden_fname} ${instance.warden_lname}`
     }));
 
-    res.json(response);
+    res.json({ is_assigned, parked_vehicles: response });
   } catch (error) {
     console.error('Error fetching data:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 
 
@@ -538,7 +551,7 @@ app.get('/get-warden-name/:user_id', async (req, res) => {
 //         pi.in_time,
 //         pi.out_time,
 //         pi.toll_amount,
-//         pi.transaction_id,
+//         pi.method_id,
 //         pi.driver_vehicle_id,
 //         pi.slot_id,
 //         pi.lot_id,
@@ -626,9 +639,9 @@ console.log('in exit from qr driver id:',driver_id);
       pi.in_time,
       pi.out_time,
       pi.toll_amount,
-      pi.transaction_id,
+      pi.method_id,
       pi.driver_vehicle_id,
-      pi.slot_id,
+      
       pi.lot_id,
       pi.warden_id,
       vt.type_name AS vehicle_type_name,
