@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { BASE_URL } from '../../config'; // Adjust the import path based on your file structure
+
 
 export default function Header() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -20,7 +22,9 @@ export default function Header() {
 
         if (user_id) {
           console.log('Making API call to fetch warden name');
-          const response = await axios.get(`http://192.168.8.198:5003/get-warden-name/${user_id}`);
+          // const response = await axios.get(`http://192.168.238.186:5003/get-warden-name/${user_id}`);
+          const response = await axios.get(`${BASE_URL}/get-warden-name/${user_id}`);
+
           console.log('API response:', response.data);
 
           setWardenName(response.data.wardenName);
