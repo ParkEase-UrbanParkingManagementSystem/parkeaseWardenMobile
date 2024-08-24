@@ -2,6 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import axios from 'axios';
+import { BASE_URL } from '../../../config'; // Adjust the import path based on your file structure
+
 
 export default function CheckoutScreen() {
   const { vehicle } = useLocalSearchParams();
@@ -50,7 +52,8 @@ export default function CheckoutScreen() {
 
   const handleExitVehicle = async () => {
     try {
-      const response = await axios.post('http://192.168.8.198:5003/exit-vehicle', {
+      // const response = await axios.post('http://192.168.238.186:5003/exit-vehicle', {
+        const response = await axios.post(`${BASE_URL}/exit-vehicle`, {
         instance_id: parsedVehicle.instance_id,
         amount: totalFee,
         out_time: parsedVehicle.outTime
