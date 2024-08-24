@@ -37,6 +37,8 @@ import { ToastProvider, useToast } from 'react-native-toast-notifications';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import colors from "../../../constants/Colors";
+import { BASE_URL } from '../../../config'; // Adjust the import path based on your file structure
+
 
 
 export default function LoginScreen() {
@@ -124,7 +126,8 @@ export default function LoginScreen() {
     const handleSignIn = () => {
         setButtonSpinner(true); // Set loading state, if needed
     
-        axios.post('http://192.168.8.198:5003/login', {
+        // axios.post('http://192.168.238.186:5003/login', {
+            axios.post(`${BASE_URL}/login`, {
             email,
             password
         })
