@@ -8,6 +8,8 @@ import SearchInput from "@/components/common/search.input";
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeInRight, FadeOutRight } from 'react-native-reanimated';
+import {BASE_URL} from '../../config';
+
 
 type Vehicle = {
   driver_vehicle_id: string;
@@ -37,7 +39,9 @@ const HomeScreen = () => {
     setError(null);
     try {
       const user_id = await AsyncStorage.getItem('user_id');
-      const response = await axios.get('http://192.168.8.198:5003/fetch_parked_vehicles', {
+      // const response = await axios.get('http://192.168.238.186:5003/fetch_parked_vehicles', {
+      const response = await axios.get(`${BASE_URL}/fetch_parked_vehicles`, {
+
         params: { user_id },
       });
   
