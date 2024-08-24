@@ -5,6 +5,8 @@ import { Camera } from 'expo-camera';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
+import { BASE_URL } from '../../config'; // Adjust the import path based on your file structure
+
 
 const QRScanner = () => {
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -45,7 +47,8 @@ const QRScanner = () => {
         setUserId(user);
 
         try {
-            const response = await fetch('http://192.168.8.198:5003/check-parking-status', {
+            // const response = await fetch('http://192.168.238.186:5003/check-parking-status', {
+                const response = await fetch(`${BASE_URL}/check-parking-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -81,7 +84,9 @@ const QRScanner = () => {
             try {
                 const user_id = await AsyncStorage.getItem('user_id');
 
-                const response = await fetch('http://192.168.8.198:5003/assign-parking', {
+                // const response = await fetch('http://192.168.238.186:5003/assign-parking', {
+                const response = await fetch(`${BASE_URL}/assign-parking`, {
+
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -114,7 +119,9 @@ const QRScanner = () => {
             try {
                 const user_id = await AsyncStorage.getItem('user_id');
 
-                    const response = await axios.get('http://192.168.8.198:5003/exit-from-qr', {
+                    // const response = await axios.get('http://192.168.238.186:5003/exit-from-qr', {
+                        const response = await axios.get(`${BASE_URL}/exit-from-qr`, {
+
                         params: { vehicle_id: vehicleId, driver_id: userId, user_id: user_id},
                       });
 
