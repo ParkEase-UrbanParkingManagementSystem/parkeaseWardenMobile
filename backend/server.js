@@ -650,6 +650,7 @@ console.log('in exit from qr driver id:',driver_id);
       pi.warden_id,
       vt.type_name AS vehicle_type_name,
       v.vehicle_number,
+            ta.amount_per_vehicle AS toll_amount,
       pl.name AS parking_lot_name,
       CONCAT(d.fname, ' ', d.lname) AS driver_name, -- Concatenate driver first and last name
       CONCAT(w.fname, ' ', w.lname) AS warden_name  -- Concatenate warden first and last name
@@ -660,6 +661,7 @@ console.log('in exit from qr driver id:',driver_id);
     JOIN parking_lot pl ON pi.lot_id = pl.lot_id
     JOIN driver d ON dv.driver_id = d.driver_id
     JOIN warden w ON pi.warden_id = w.warden_id
+        JOIN toll_amount ta ON pi.lot_id = ta.lot_id AND vt.vehicle_type_id = ta.type_id
     WHERE pi.warden_id = $1 
       AND pi.out_time IS NULL
       AND pi.driver_vehicle_id = $2;
