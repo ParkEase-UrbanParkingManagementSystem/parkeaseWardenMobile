@@ -57,7 +57,8 @@ const HomeScreen = () => {
   };
   
   
-
+//Purpose: The useFocusEffect hook is part of React Navigation. It allows you to perform side effects when the screen comes into focus
+//(i.e., when the user navigates to the screen) and clean up when the screen goes out of focus.
   useFocusEffect(
     useCallback(() => {
       fetchData();
