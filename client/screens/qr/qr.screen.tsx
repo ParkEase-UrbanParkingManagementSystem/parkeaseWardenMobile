@@ -18,6 +18,7 @@ const QRScanner = () => {
     const [popupMessage, setPopupMessage] = useState<string>('');
     const [popupType, setPopupType] = useState<'park' | 'exit' | null>(null);
     const router = useRouter();
+    const [numberOfSlots, setNumberOfSlots] = useState<number>(1); // Number of slots state
 
     useFocusEffect(
         React.useCallback(() => {
@@ -29,6 +30,7 @@ const QRScanner = () => {
             setIsAllowedToPark(false);
             setPopupMessage('');
             setPopupType(null);
+            setNumberOfSlots(1); // Reset number of slots
         }, [])
     );
 
@@ -94,7 +96,9 @@ const QRScanner = () => {
                     body: JSON.stringify({
                         vehicle_id: vehicleId,
                         driver_id: userId,
-                        user_id: user_id
+                        user_id: user_id,
+                        numberOfSlots: numberOfSlots // Pass the number of slots
+
                     })
                 });
 
@@ -147,12 +151,24 @@ const QRScanner = () => {
         }
     };
 
+    const handleIncrementSlots = () => {
+        setNumberOfSlots((prev) => prev + 1);
+    };
+
+    const handleDecrementSlots = () => {
+        if (numberOfSlots > 1) {
+            setNumberOfSlots((prev) => prev - 1);
+        }
+    };
+
     const handleScanAgain = () => {
         setScanned(false);
         setVehicleId('');
         setUserId('');
         setPopupMessage('');
         setPopupType(null);
+        setNumberOfSlots(1); // Reset number of slots
+
     };
 
     if (hasPermission === null) {
@@ -195,6 +211,15 @@ const QRScanner = () => {
                         editable={false}
                     />
                     <Text style={styles.popupMessage}>{popupMessage}</Text>
+                    <View style={styles.slotContainer}>
+                        <TouchableOpacity style={styles.slotButton} onPress={handleDecrementSlots}>
+                            <Text style={styles.slotButtonText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.slotCount}>{numberOfSlots}</Text>
+                        <TouchableOpacity style={styles.slotButton} onPress={handleIncrementSlots}>
+                            <Text style={styles.slotButtonText}>+</Text>
+                        </TouchableOpacity>
+                    </View>
                     <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
                         <Text style={styles.confirmButtonText}>Confirm</Text>
                     </TouchableOpacity>
@@ -237,6 +262,26 @@ const styles = StyleSheet.create({
         bottom: 50,
         width: '100%',
         alignItems: 'center',
+    },
+    slotContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    slotButton: {
+        backgroundColor: '#4CAF50',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 5,
+        marginHorizontal: 5,
+    },
+    slotButtonText: {
+        color: 'white',
+        fontSize: 18,
+    },
+    slotCount: {
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     input: {
         height: 40,
