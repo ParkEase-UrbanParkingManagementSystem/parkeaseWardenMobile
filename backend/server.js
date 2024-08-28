@@ -198,7 +198,7 @@ app.post('/check-parking-status', async (req, res) => {
 
 //assign parking endpoint
 app.post('/assign-parking', async (req, res) => {
-  const { vehicle_id, driver_id, user_id } = req.body;
+  const { vehicle_id, driver_id, user_id,numberOfSlots } = req.body;
   console.log('userissdddd:', user_id);
 
   try {
@@ -254,6 +254,37 @@ app.post('/assign-parking', async (req, res) => {
       UPDATE driver SET isparked = true WHERE driver_id = $1;
       `;
     await pool.query(updateDriverTable, [driver_id]);
+
+    //get the vehicle type id
+    const getVehicleTypeId = `
+      SELECT type_id 
+      FROM vehicle 
+      WHERE vehicle_id = $1;
+    `;
+    const resultGetVehicleTypeId = await pool.query(getVehicleTypeId, [vehicle_id]);
+
+    const vehicle_type_id = resultGetVehicleTypeId.rows[0].type_id;
+    console.log('vehicle_type_id:', vehicle_type_id);
+
+    if (vehicle_type_id === 2) {
+      const updateAvailableBikeslots = `
+      UPDATE parking_lot SET bike_capacity_available = bike_capacity_available - $2 WHERE lot_id = $1;
+      `;
+      await pool.query(updateAvailableBikeslots, [lot_id , numberOfSlots]);
+    }
+    else{
+      const updateAvailableCarslots = `
+      UPDATE parking_lot SET car_capacity_available = car_capacity_available - $2 WHERE lot_id = $1;
+      `;
+      await pool.query(updateAvailableCarslots, [lot_id , numberOfSlots]);
+    }
+
+
+  //   const availableslots = `
+  //   UPDATE driver SET isparked = true WHERE driver_id = $1;
+  //   `;
+  // await pool.query(updateDriverTable, [driver_id]);
+
     console.log('update isparked in driver table:', driver_id);
 
 
@@ -436,7 +467,86 @@ app.get('/fetch_parked_vehicles', async (req, res) => {
 });
 
 
+app.get('/fetch_available_slots', async (req, res) => {
+  console.log('user_id in fetching availableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:', req.query);
+  const { user_id } = req.query;
+  try{
+    const getWardenId = `
+      SELECT warden_id 
+      FROM warden 
+      WHERE user_id = $1;
+    `;
+    const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+    if (resultGetWardenId.rows.length === 0) {
+      return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_id = resultGetWardenId.rows[0].warden_id;
 
+    const getLotId = `
+      SELECT lot_id from warden_parking_lot where warden_id = $1;`;
+    const resultGetLotId = await pool.query(getLotId, [warden_id]);
+    if (resultGetLotId.rows.length === 0) {
+      return res.status(404).json({ message: 'Lot not found' });
+    }
+    const lot_id = resultGetLotId.rows[0].lot_id;
+
+    const getAvailableSlots = `
+      SELECT car_capacity_available, bike_capacity_available
+      FROM parking_lot
+      WHERE lot_id = $1;`;
+      
+    const resultGetAvailableSlots = await pool.query(getAvailableSlots, [lot_id]);
+    if (resultGetAvailableSlots.rows.length === 0) {
+      return res.status(404).json({ message: 'No available slots found' });
+    }
+    console.log('resultGetAvailableSlotssssssssssssssssssssssssssssssssssssssssssss:', resultGetAvailableSlots.rows[0]);
+    res.json(resultGetAvailableSlots.rows[0]);
+
+  }catch(error){
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+app.post('/update_slots', async (req, res) => {
+  const { user_id, carSlots, bikeSlots } = req.body;
+  console.log('user_id in update slots:', user_id);
+  console.log("number of carssss #######################################################",carSlots);
+  console.log("number of carssss #######################################################",bikeSlots);
+
+  try{
+    const getWardenId = `
+    SELECT warden_id 
+    FROM warden 
+    WHERE user_id = $1;
+  `;
+  const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+  if (resultGetWardenId.rows.length === 0) {
+    return res.status(404).json({ message: 'Warden not found' });
+  }
+  const warden_id = resultGetWardenId.rows[0].warden_id;
+
+  const getLotId = `
+    SELECT lot_id from warden_parking_lot where warden_id = $1;`;
+  const resultGetLotId = await pool.query(getLotId, [warden_id]);
+  if (resultGetLotId.rows.length === 0) {
+    return res.status(404).json({ message: 'Lot not found' });
+  }
+  const lot_id = resultGetLotId.rows[0].lot_id;
+
+  const updateSlots = `
+    UPDATE parking_lot
+    SET car_capacity_available = $1, bike_capacity_available = $2
+    where lot_id = $3;
+    `;
+  await pool.query(updateSlots, [carSlots, bikeSlots, lot_id]);
+  res.status(200).json({ message: 'Slots updated successfully' });
+
+  }catch(error){
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 app.post('/exit-vehicle', async (req, res) => {
   const { instance_id, amount } = req.body;
