@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Modal } from "react-native";
-import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useState, useEffect, useCallback } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -12,8 +12,10 @@ export default function Header() {
   const [carSlots, setCarSlots] = useState(300);
   const [bikeSlots, setBikeSlots] = useState(100);
   const [wardenName, setWardenName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+
+  // useEffect(() => {
     const fetchWardenName = async () => {
       try {
         console.log('Fetching user_id from AsyncStorage');
@@ -37,8 +39,49 @@ export default function Header() {
       }
     };
 
+    const fetchAvailableSlots = async () => {
+      try {
+        const user_id = await AsyncStorage.getItem('user_id');
+        const response = await axios.get(`${BASE_URL}/fetch_available_slots`, {
+          params: { user_id },
+        });
+        console.log('Available slotsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss:', response.data);
+  
+        setBikeSlots(response.data.bike_capacity_available);
+        setCarSlots(response.data.car_capacity_available);
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+        setError('Error fetching available slots');
+      }
+    };
+
+
+    const handleConfirm = async () => {
+      try{
+        const user_id = await AsyncStorage.getItem('user_id');
+        const response = await axios.post(`${BASE_URL}/update_slots`, {
+          user_id,
+          carSlots: carSlots,
+          bikeSlots: bikeSlots,
+        });
+        console.log('Updated slots:', response.data);
+        setModalVisible(false);
+        // router.push('/(tabs)/home');
+
+      }catch(error){  
+        console.error('Error updating slots:', error);
+        setError('Error updating slots');
+      }
+    };
+
+    // fetchWardenName();
+  // }, []);
+useFocusEffect(
+  useCallback(() => { 
     fetchWardenName();
-  }, []);
+    fetchAvailableSlots(); // Fetch available slots when screen is focused
+  }, [])
+);
 
   return (
     <View style={styles.container}>
@@ -83,7 +126,16 @@ export default function Header() {
                 style={styles.input}
                 keyboardType="numeric"
                 value={carSlots.toString()}
-                onChangeText={(text) => setCarSlots(parseInt(text))}
+                onChangeText={(text) => 
+                  // setCarSlots(parseInt(text))}
+                  {
+                    const parsedValue = text? parseInt(text): 0;
+                    if(!isNaN(parsedValue)){
+                      setCarSlots(parsedValue);
+                    } else {
+                      setCarSlots(0);
+                    }
+                  }}
               />
             </View>
             <View style={styles.inputGroup}>
@@ -92,12 +144,27 @@ export default function Header() {
                 style={styles.input}
                 keyboardType="numeric"
                 value={bikeSlots.toString()}
-                onChangeText={(text) => setBikeSlots(parseInt(text))}
+                onChangeText={(text) => 
+                  // setBikeSlots(parseInt(text))}
+                  {
+                    // Validate and parse the text input
+                    const parsedValue = text ? parseInt(text, 10) : 0;
+                    // Check if parsed value is a valid number
+                    if (!isNaN(parsedValue)) {
+                      setBikeSlots(parsedValue);
+                    } else {
+                      // Handle invalid input if needed
+                      setBikeSlots(0); // or some default value
+                    }
+                  }}
+
               />
             </View>
             <TouchableOpacity
               style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible(false)}>
+              // onPress={() => setModalVisible(false)}>
+              onPress={handleConfirm} // Call handleConfirm when "CONFIRM" is pressed
+              >
               <Text style={styles.textStyle}>CONFIRM</Text>
             </TouchableOpacity>
           {/* </View> */}
