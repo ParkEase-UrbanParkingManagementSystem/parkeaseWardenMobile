@@ -795,10 +795,162 @@ console.log('in exit from qr driver id:',driver_id);
 });
 
 
+//fetchPersonalInfo endpoint
+app.get('/fetchPersonalInfo', async (req, res) => {
+  const  {user_id}  = req.query;
+  try {
+    // Get the warden_id from the user_id
+    const getWardenId = `
+      SELECT warden_id 
+      FROM warden 
+      WHERE user_id = $1;
+    `;
+    const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+    if (resultGetWardenId.rows.length === 0) {
+      return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_id = resultGetWardenId.rows[0].warden_id;
+    console.log('warden_id:', warden_id);
+
+    //fetch from warden table
+    const fetchWardenTable = `
+    select
+    fname as warden_fname,
+    lname as warden_lname,
+    nic as warden_nic,
+    age as warden_age,
+    gender as gender
+    from warden
+    where warden_id = $1;`;
+
+    const resultFetchWardenTable = await pool.query(fetchWardenTable, [warden_id]);
+    if (resultFetchWardenTable.rows.length === 0) {
+        return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_details1 = resultFetchWardenTable.rows[0];
+
+    //fetch fromuser table
+    const fetchUserTable = `
+    select
+    email as email,
+    addressno as addressno,
+    street_1 as street_1,
+    street_2 as street_2,
+    city as city,
+    province as province,
+    contact as contactno
+    from users
+    where user_id = $1;`;
+
+    const resultFetchUserTable = await pool.query(fetchUserTable, [user_id]);
+    if (resultFetchUserTable.rows.length === 0) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    const warden_details2 = resultFetchUserTable.rows[0];
+
+      const response = {
+        warden_details1: warden_details1,
+        warden_details2: warden_details2
+      };
+      console.log('responseeeeeeeeeeeepersonallllllllllllllllll', response);
+      res.json(response);
+      
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+//fetchWorkingInfo endpoint
+app.get('/fetchWorkingInfo', async (req, res) => {
+  const  {user_id}  = req.query;
+  try {
+    // Get the warden_id from the user_id
+    const getWardenId = `
+      SELECT warden_id 
+      FROM warden 
+      WHERE user_id = $1;
+    `;
+    const resultGetWardenId = await pool.query(getWardenId, [user_id]);
+    if (resultGetWardenId.rows.length === 0) {
+      return res.status(404).json({ message: 'Warden not found' });
+    }
+    const warden_id = resultGetWardenId.rows[0].warden_id;
+    console.log('warden_id:', warden_id);
+
+    //get pmc id
+      const getPmcId = `
+      SELECT pmc_id
+      FROM warden 
+      WHERE user_id = $1;`;
+      const resultGetPmcId = await pool.query(getPmcId, [user_id]);
+      if (resultGetPmcId.rows.length === 0) {
+        return res.status(404).json({ message: 'Pmc not found' });
+      }
+      const pmc_id = resultGetPmcId.rows[0].pmc_id;
+
+      //get pmc name
+      const getPmcName = `
+      SELECT name
+      FROM pmc 
+      WHERE pmc_id = $1;`;
+      const resultGetPmcName = await pool.query(getPmcName, [pmc_id]);
+      if (resultGetPmcName.rows.length === 0) {
+          return res.status(404).json({ message: 'Pmc not found' });
+      }
+      const pmc_name = resultGetPmcName.rows[0].name;
+
+      //get parking lot id
+      const getParkingLotId = `
+      select lot_id 
+      from warden_parking_lot
+      where warden_id = $1;`;
+      const resultGetParkingLotId = await pool.query(getParkingLotId, [warden_id]);
+      if (resultGetParkingLotId.rows.length === 0) {
+          return res.status(404).json({ message: 'Parking lot not found' });
+      }
+      const lot_id = resultGetParkingLotId.rows[0].lot_id;
+  
+
+      //get parking lot name
+      //column loacation dropped
+      const getParkingLotDetails = `
+      SELECT 
+      name as parking_lot_name,
+      bike_capacity as bike_capacity,
+      tw_capacity as tw_capacity,
+      car_capacity as car_capacity,
+      xlvehicle_capacity as xlvehicle_capacity,
+      full_capacity as full_capacity,
+      addressno as lot_addressno,
+      street1 as lot_street1,
+      street2 as lot_street2,
+      city as lot_city,
+      district as lot_district,
+      description as lot_description
+      from parking_lot
+      WHERE lot_id = $1;`;
+
+      const resultGetParkingLotDetails = await pool.query(getParkingLotDetails, [lot_id]);
+      if (resultGetParkingLotDetails.rows.length === 0) {
+          return res.status(404).json({ message: 'Parking lot not found' });
+      }
+      const parking_lot_details = resultGetParkingLotDetails.rows[0];
+      // console.log('parking_lot_detailsssssssssss:', parking_lot_details);
 
 
-
-
+      const response = {
+          pmc_name: pmc_name,
+          parking_lot_details: parking_lot_details
+      };
+      // console.log('responseeeeeeeeeeee', response);
+      res.json(response);
+      
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
