@@ -45,6 +45,8 @@ const QRScanner = () => {
         const [vehicle, user] = data.split(',').map(part => part.split(':')[1].trim());
         setVehicleId(vehicle);
         setUserId(user);
+        console.log('Vehicle ID:', vehicle);
+        console.log('User ID:', user);
 
         try {
             // const response = await fetch('http://192.168.238.186:5003/check-parking-status', {
