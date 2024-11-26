@@ -165,7 +165,7 @@ export default function CheckoutScreen() {
       
       <View style={styles.checkoutInner}>
         <TouchableOpacity  onPress={handleReleaseVehicle}>
-          <Text>Release Vehicle</Text>
+        <Text style={styles.releaseButtonText}>Release Vehicle</Text>
         </TouchableOpacity>
       </View>
 
@@ -264,5 +264,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  releaseButtonText: {
+    color: 'darkred',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline', // Makes the text underlined
+    textAlign: 'center', // Centers the text
+    marginTop: 20,
   },
 });
