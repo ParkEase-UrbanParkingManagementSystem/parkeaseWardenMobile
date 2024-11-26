@@ -1,23 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image } from 'react-native';
 // import { Card, Title } from 'react-native-paper';
 // import { LinearGradient } from "expo-linear-gradient";
 // import colors from "../../../constants/Colors";
 import { useLocalSearchParams } from 'expo-router';
+import { differenceInMinutes, format } from 'date-fns';
 
 export default function ViewHistoryVehicleScreen() {
-    const { vehicle } = useLocalSearchParams();
-    const vehicleString = Array.isArray(vehicle) ? vehicle[0] : vehicle;
-    const parsedVehicle = vehicleString ? JSON.parse(vehicleString) : null;
-  
-  if (!parsedVehicle) {
-    return (
-      <View style={styles.container}>
-        <Text>No vehicle data available.</Text>
-      </View>
-    );
-  }
+    const params = useLocalSearchParams();
 
+    // const { vehicle } = useLocalSearchParams();
+    // const vehicleString = Array.isArray(vehicle) ? vehicle[0] : vehicle;
+    // const parsedVehicle = vehicleString ? JSON.parse(vehicleString) : null;
+    // Prioritize vehicle over params.data
+    const vehicleData = typeof params.vehicle === 'string' ? JSON.parse(params.vehicle) : null;
+    const data = typeof params.data === 'string' ? JSON.parse(params.data) : null;
+  
+    // Use vehicleData if available, otherwise use data
+    const parsedData = vehicleData || data;
+  
+    console.log('Parsed Data:', parsedData);
+  // if (!parsedVehicle) {
+  //   return (
+  //     <View style={styles.container}>
+  //       <Text>No vehicle data available.</Text>
+  //     </View>
+  //   );
+  // }
+  useEffect(() => {
+    if (parsedData) {
+      console.log('Vehicle data:', parsedData);
+    }
+  }, [parsedData]);
   // Hardcoded data
   const hardcodedData = {
     location: 'Wajira Road',
@@ -35,56 +49,61 @@ export default function ViewHistoryVehicleScreen() {
       <View style={styles.detailsContainer}>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Location</Text>
-          <Text style={styles.value}>{hardcodedData.location}</Text>
+          <Text style={styles.value}>{parsedData.name}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Vehicle Number</Text>
+          <Text style={styles.value}>{parsedData.vehicle_number}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Type of Vehicle</Text>
-          <Text style={styles.value}>{parsedVehicle.vehicleType}</Text>
+          <Text style={styles.value}>{parsedData.vehicle_type_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>In Time</Text>
-          <Text style={[styles.value, styles.highlight]}>{parsedVehicle.inTime}</Text>
+          <Text style={[styles.value, styles.highlight]}>{format(new Date(parsedData.in_time), 'hh.mm a')}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Out Time</Text>
-          <Text style={[styles.value, styles.highlight]}>{parsedVehicle.outTime}</Text>
+          <Text style={[styles.value, styles.highlight]}>{parsedData.out_time ? format(new Date(parsedData.out_time), 'hh.mm a') : 'In Progress'}
+          </Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Duration</Text>
-          <Text style={[styles.value, styles.highlight1]}>{parsedVehicle.duration}</Text>
+          <Text style={[styles.value, styles.highlight1]}>{calculateDuration(parsedData.in_time,parsedData.out_time)}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Date</Text>
-          <Text style={styles.value}>{parsedVehicle.date}</Text>
+          <Text style={styles.value}>{format(new Date(parsedData.in_time), 'yyyy-MM-dd')}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Amount</Text>
-          <Text style={[styles.value, styles.highlight]}>{parsedVehicle.amount} LKR</Text>
+          <Text style={[styles.value, styles.highlight]}>{parsedData.toll_amount} LKR</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Payment Method</Text>
-          <Text style={[styles.value]}>{parsedVehicle.method}</Text>
+          <Text style={[styles.value]}>{parsedData.payment_method_name == 'Released'? '-':parsedData.payment_method_name}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Status</Text>
-          <Text style={[styles.value, styles.highlight]}>{parsedVehicle.status}</Text>
+          <Text style={getStatusStyle(parsedData.method_id !== 4 ? 'Paid' : 'Released')}>{parsedData.method_id !=4 ? 'Paid': 'Released'}</Text>
         </View>
-        <View style={styles.detailRow}>
+        {/* <View style={styles.detailRow}>
           <Text style={styles.label}>Parking ID</Text>
-          <Text style={styles.value}>{parsedVehicle.id}</Text>
-        </View>
-        <View style={styles.detailRow}>
+          <Text style={styles.value}>{parsedData.id}</Text>
+        </View> */}
+        {/* <View style={styles.detailRow}>
           <Text style={styles.label}>Driver ID</Text>
-          <Text style={styles.value}>{parsedVehicle.driverId}</Text>
-        </View>
-        <View style={styles.detailRow}>
+          <Text style={styles.value}>{parsedData.driver_name}</Text>
+        </View> */}
+        {/* <View style={styles.detailRow}>
           <Text style={styles.label}>Slots Allocated</Text>
-          <Text style={styles.value}>{parsedVehicle.slotsAllocated}</Text>
-        </View>
-        <View style={styles.detailRow}>
+          <Text style={styles.value}>{parsedData.slotsAllocated}</Text>
+        </View> */}
+        {/* <View style={styles.detailRow}>
           <Text style={styles.label}>Warden ID</Text>
-          <Text style={styles.value}>{hardcodedData.wardenId}</Text>
-        </View>
+          <Text style={styles.value}>{parsedData.warden_name}</Text>
+        </View> */}
       </View>
 
       {/* <View style={styles.buttonsContainer}>
@@ -98,7 +117,30 @@ export default function ViewHistoryVehicleScreen() {
     </ScrollView>
   );
 }
+const getStatusStyle = (status: string) => {
+  switch (status) {
+    case 'Released':
+      return [styles.value, styles.releasedStatus];
+    case 'Paid':
+      return [styles.value, styles.paidStatus];
+    default:
+      return styles.value;
+  }
+};
 
+// Helper function to calculate duration
+const calculateDuration = (inTime: string, outTime: string | null): string => {
+  if (!outTime) return 'In Progress';
+
+  const inDate = new Date(inTime);
+  const outDate = new Date(outTime);
+
+  const totalMinutes = differenceInMinutes(outDate, inDate);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}hr ${minutes}min`;
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -178,6 +220,14 @@ const styles = StyleSheet.create({
       color: 'red',
       textAlign: 'center',
     },
+    releasedStatus: {
+      color: 'red', // Change text color to red for 'Released' status
+      fontWeight: 'bold',
+    },
+    paidStatus: {
+      color: '#1FA665', // Change text color to black for 'Paid' status
+      fontWeight: 'bold',
+    }
   });
   
   
