@@ -74,6 +74,32 @@ export default function CheckoutScreen() {
     }
   };
 
+
+
+  const handleReleaseVehicle = async () => {
+    try {
+      // const response = await axios.post('http://192.168.238.186:5003/exit-vehicle', {
+        const response = await axios.post(`${BASE_URL}/release-vehicle`, {
+        instance_id: parsedVehicle.instance_id,
+        amount: totalFee,
+        out_time: parsedVehicle.outTime,
+        vehicle_type_id: parsedVehicle.vehicle_type_id,
+        lot_id: parsedVehicle.lot_id,
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Success', 'Vehicle exited successfully', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') } // Navigate to home screen
+        ]);
+      } else {
+        Alert.alert('Error', 'Failed to exit vehicle');
+      }
+    } catch (error) {
+      console.error('Error exiting vehicle:', error);
+      Alert.alert('Error', 'An error occurred while exiting vehicle');
+    }
+  };
+
   return (
     <View style={styles.checkout}>
       <View style={styles.cardSmallParent}>
@@ -138,8 +164,8 @@ export default function CheckoutScreen() {
 
       
       <View style={styles.checkoutInner}>
-        <TouchableOpacity >
-          <Text >Release Vehicle</Text>
+        <TouchableOpacity  onPress={handleReleaseVehicle}>
+          <Text>Release Vehicle</Text>
         </TouchableOpacity>
       </View>
 
