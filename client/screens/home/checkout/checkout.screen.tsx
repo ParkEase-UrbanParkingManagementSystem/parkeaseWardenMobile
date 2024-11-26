@@ -56,7 +56,9 @@ export default function CheckoutScreen() {
         const response = await axios.post(`${BASE_URL}/exit-vehicle`, {
         instance_id: parsedVehicle.instance_id,
         amount: totalFee,
-        out_time: parsedVehicle.outTime
+        out_time: parsedVehicle.outTime,
+        vehicle_type_id: parsedVehicle.vehicle_type_id,
+        lot_id: parsedVehicle.lot_id,
       });
 
       if (response.status === 200) {
@@ -133,6 +135,14 @@ export default function CheckoutScreen() {
           <Text style={styles.exitButtonText}>Exit Vehicle</Text>
         </TouchableOpacity>
       </View>
+
+      
+      <View style={styles.checkoutInner}>
+        <TouchableOpacity >
+          <Text >Release Vehicle</Text>
+        </TouchableOpacity>
+      </View>
+
     </View>
   );
 }
