@@ -138,7 +138,7 @@ if (!fontsLoaded || fontError) {
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Age</Text>
-        <TextInput style={styles.input} value={personalInfo?.warden_details1.warden_age.toString() || ''} editable={false} />
+        <TextInput style={styles.input} value={personalInfo?.warden_details1.warden_age?.toString() || ''} editable={false} />
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Contact Number</Text>
@@ -154,7 +154,7 @@ if (!fontsLoaded || fontError) {
         <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
-          value={`${personalInfo?.warden_details2.addressno.toString() || ''}, ${personalInfo?.warden_details2.street_1}, ${personalInfo?.warden_details2.street_2}, ${personalInfo?.warden_details2.city}, ${personalInfo?.warden_details2.province}`}
+          value={`${personalInfo?.warden_details2.addressno?.toString() || ''}, ${personalInfo?.warden_details2.street_1}, ${personalInfo?.warden_details2.street_2}, ${personalInfo?.warden_details2.city}, ${personalInfo?.warden_details2.province}`}
           // value={address}
           // onChangeText={setAddress}
           // editable={isEditable}

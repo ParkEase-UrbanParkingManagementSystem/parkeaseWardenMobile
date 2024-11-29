@@ -125,7 +125,7 @@ useFocusEffect(
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                value={carSlots.toString()}
+                value={carSlots?.toString()}
                 onChangeText={(text) => 
                   // setCarSlots(parseInt(text))}
                   {
@@ -143,7 +143,7 @@ useFocusEffect(
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                value={bikeSlots.toString()}
+                value={bikeSlots?.toString()}
                 onChangeText={(text) => 
                   // setBikeSlots(parseInt(text))}
                   {
