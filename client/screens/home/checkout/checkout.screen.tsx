@@ -156,6 +156,7 @@ export default function CheckoutScreen() {
           </View>
         </View> 
       </View>
+     <View style={styles.button_container}>
       <View style={styles.checkoutInner}>
         <TouchableOpacity style={styles.exitButton} onPress={handleExitVehicle}>
           <Text style={styles.exitButtonText}>Exit Vehicle</Text>
@@ -169,11 +170,19 @@ export default function CheckoutScreen() {
         </TouchableOpacity>
       </View>
 
+      </View>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
+  button_container:{
+    display: 'flex',
+    flexDirection: 'row',
+  },
+
   checkout: {
     flex: 1,
     backgroundColor: '#f7f7fa',
@@ -251,7 +260,7 @@ const styles = StyleSheet.create({
   },
   checkoutInner: {
     marginTop: 20,
-    width: '100%',
+    width: '50%',
     alignItems: 'center',
   },
   exitButton: {
