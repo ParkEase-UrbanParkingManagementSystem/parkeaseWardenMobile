@@ -94,14 +94,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </Animated.View>
           <View style={[styles.view2]}>
-            <TouchableOpacity
-              onPress={() => router.push('/(routes)/addVehicle')}
-              style={styles.addvehiclebutton}
-            >
-              <Text style={[styles.addVehicletext, { fontFamily: 'Raleway_700Bold' }]}>
-                +Add Vehicle
-              </Text>
-            </TouchableOpacity>
+           
           </View>
           <Text style={[styles.parkedVehicles, { fontFamily: 'Raleway_700Bold' }]}>
             Parked Vehicles
