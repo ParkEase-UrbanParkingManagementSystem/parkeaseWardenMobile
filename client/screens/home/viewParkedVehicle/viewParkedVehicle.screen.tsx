@@ -10,6 +10,9 @@ export default function ViewParkedVehicleScreen() {
   const route = useRoute();
   const params = useLocalSearchParams();
 
+
+  console.log(params);
+
   // Prioritize vehicle over params.data
   const vehicleData = typeof params.vehicle === 'string' ? JSON.parse(params.vehicle) : null;
   const data = typeof params.data === 'string' ? JSON.parse(params.data) : null;

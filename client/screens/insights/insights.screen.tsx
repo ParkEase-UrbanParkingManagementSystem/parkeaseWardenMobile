@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image } from 'react-native';
 import { Card } from 'react-native-paper';
 import Header2 from "@/components/header3/header2";
@@ -6,8 +6,65 @@ import { LinearGradient } from "expo-linear-gradient";
 import colors from "../../constants/Colors";
 import SearchInput from "@/components/common/search.input";
 import RNPickerSelect from 'react-native-picker-select';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../config';
+import axios from 'axios';
 
 export default function InsightsScreen() {
+  const [totalSlots, setTotalSlots] = useState(0); // To store the total parking slots
+  const [availableSlots, setAvailableSlots] = useState({ car: 0, bike: 0 }); // To store available slots for cars and bikes
+  const [ratesPerHour, setRatesPerHour] = useState({ car: 0, bike: 0 }); // To store parking rates per vehicleffdd
+  const [totalRevenue, setTotalRevenue] = useState(0); // To store the total revenue generated
+  const [paymentMethodsIncome, setPaymentMethodsIncome] = useState({ cash: 0, card: 0, commission: 0 }); // To store the total revenue generated
+  const[name, setName] = useState(''); // To store the name of the parking area
+  const [loading, setLoading] = useState(false); // To track the loading state
+  const [error, setError] = useState(''); // To store any error messages
+
+  // Fetch parking details when the component mounts
+  useEffect(() => {
+    fetchParkingDetails();
+  }, []);
+
+  const fetchParkingDetails = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const user_id = await AsyncStorage.getItem("user_id");
+
+      // Make the API call to fetch parking details
+      const response = await axios.get(`${BASE_URL}/fetch_parking_details`, {
+        params: { user_id },
+      });
+
+      // Destructure the response data to get the parking details
+      const { total_slots, available_slots, rates_per_hour, total_income, payment_methods_income, lot_name } = response.data;
+
+      // Update your state variables with the response data
+      setTotalSlots(total_slots); // Total parking slots
+      setAvailableSlots(available_slots); // Available parking slots for cars and bikes
+      setRatesPerHour(rates_per_hour); // Parking rates per vehicle
+      setTotalRevenue(total_income); // Total revenue generatedk
+      setPaymentMethodsIncome(payment_methods_income); // Total revenue generatedk
+      setName(lot_name);
+
+
+      console.log("Parking details fetched successfully:", response.data);
+
+      console.log("Total Slots:", total_slots);
+      console.log("Available Slots:", available_slots);
+      console.log("Rates Per Hour:", rates_per_hour);
+      console.log("Total Revenue:", total_income);
+      console.log("Payment Methods Income:", payment_methods_income);
+
+    } catch (error) {
+      console.error("Error fetching parking details:", error);
+      setError("Error fetching parking details");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
   const [selectedMonth, setSelectedMonth] = useState('');
 
   const months = [
@@ -26,7 +83,7 @@ export default function InsightsScreen() {
   ];
 
   return (
-    <LinearGradient 
+    <LinearGradient
       colors={[colors.background, "white"]}
       style={{ flex: 1, paddingTop: 0 }}
     >
@@ -34,87 +91,95 @@ export default function InsightsScreen() {
 
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Overview</Text>
-        
+
         <View style={styles.row}>
-          <Card style={styles.card}>
-            <Text style={styles.cardTitle}>Parking Area</Text>
-            <Text style={styles.cardContent}>K Zone</Text>
-            <Text style={styles.date}>21/02/2023</Text>
+          <Card style={styles.cardEx}>
+            <Text style={styles.cardTitle2}>Parking Area</Text>
+            <Text style={styles.cardContentTitle}>{name}</Text>
+            <Text style={styles.date}>03/12/2024</Text>
           </Card>
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Rates Per Hour</Text>
-            <View style={styles.row}>
+            <View style={styles.row2}>
+
+            <View style={styles.rowEx2}>
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/carIcon.png')} />
-              <Text style={styles.cardContent}>100</Text>
+              <Text style={styles.cardContent2}>{ratesPerHour.car}/=</Text>
+              </View>
+              
+
+              <View style={styles.rowEx2}>
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/bikeIcon.png')} />
-              <Text style={styles.cardContent}>50</Text>
+              <Text style={styles.cardContent2}>{ratesPerHour.bike}/=</Text>
+              </View>
+
+
             </View>
           </Card>
         </View>
-  
+
         <View style={styles.row}>
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Total Slots</Text>
             <View style={styles.row}>
+              <View style={styles.rowEx}>
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/carIcon.png')} />
-              <Text style={styles.cardContent}>100</Text>
+              <Text style={styles.cardContent}>{totalSlots?.car}</Text>
+
+              </View>
+
+              <View style={styles.rowEx}>
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/bikeIcon.png')} />
-              <Text style={styles.cardContent}>50</Text>
+              <Text style={styles.cardContent}>{totalSlots?.bike}</Text>
+                </View>
             </View>
           </Card>
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Available Slots</Text>
             <View style={styles.row}>
+
+            <View style={styles.rowEx}>
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/carIcon.png')} />
-              <Text style={styles.cardContent}>300</Text>
+              <Text style={styles.cardContent}>{availableSlots?.car}</Text>
+              </View>
+              <View style={styles.rowEx}>  
               <Image style={styles.icon38} source={require('@/assets/iconsInsightScreen/bikeIcon.png')} />
-              <Text style={styles.cardContent}>100</Text>
-            </View>
+              <Text style={styles.cardContent}>{availableSlots?.bike}</Text>
+            
+              </View></View>
           </Card>
         </View>
-  
+
         <Text style={styles.subHeader}>Daily Revenue</Text>
-  
+
         <View style={styles.row}>
           <Card style={styles.revenueCard}>
-            <Text style={styles.revenueAmount}>3000 LKR</Text>
+            <Text style={styles.revenueAmount}>{paymentMethodsIncome?.cash}/=</Text>
             <Text style={styles.revenueType}>Cash</Text>
           </Card>
           <Card style={styles.revenueCard}>
-            <Text style={styles.revenueAmount}>1000 LKR</Text>
-            <Text style={styles.revenueType}>Card</Text>
+            <Text style={styles.revenueAmount}>{paymentMethodsIncome?.wallet}/=</Text>
+            <Text style={styles.revenueType}>Wallet</Text>
           </Card>
           <Card style={styles.revenueCard}>
-            <Text style={styles.revenueAmount}>500 LKR</Text>
-            <Text style={styles.revenueType}>Commission</Text>
+            <Text style={styles.revenueAmount}>{paymentMethodsIncome?.parkpoints}/=</Text>
+            <Text style={styles.revenueType}>ParkPoints</Text>
           </Card>
         </View>
+
         <View style={styles.row1}>
           <Text style={styles.totalIncome}>Today Total Income</Text>
-          <Text style={styles.totalAmount}>Rs. 4000</Text>
+          <Text style={styles.totalAmount}>Rs. {totalRevenue}</Text>
         </View>
-        <Text style={styles.subHeader}>Monthly Revenue</Text>
+
+      
+
         
-        <Card style={styles.monthlyCard}>
-          <View style={styles.dropdownContainer}>
-            <Text style={styles.month}>Month</Text>
-            <RNPickerSelect
-              onValueChange={(value) => setSelectedMonth(value)}
-              items={months}
-              style={pickerSelectStyles}
-              placeholder={{ label: 'Select a month', value: null }}
-            />
-          </View>
-          {selectedMonth ? (
-            <Text style={styles.monthlyRevenue}>
-              Warden Commission for {selectedMonth} 10000 LKR
-            </Text>
-          ) : null}
-        </Card>
       </ScrollView>
     </LinearGradient>
-  )
+  );
 }
+
 
 const styles = StyleSheet.create({
   icon38: {
@@ -150,22 +215,92 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+  rowEx: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    margin: 10,
+    marginTop: 5,
+  },
+
+  rowEx2: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 10,
+    marginTop: 5,
+  },
+
+
+  row2: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    margin: 10,
+    marginTop: 5,
+  },
+
   card: {
     width: '48%',
     padding: 10,
     backgroundColor:'rgba(26, 33, 49, 1)',
     borderRadius: 10,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+
+  cardEx: {
+    width: '48%',
+    padding: 10,
+    backgroundColor:'rgba(26, 33, 49, 1)',
+    borderRadius: 10,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+
   },
   cardTitle: {
+    marginBottom: 10,
     fontSize: 16,
     fontWeight: 'bold',
-    color:'white'
+    color:'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+
   },
+  
+  cardTitle2: {
+    marginBottom: 25,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color:'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+  },
+
   cardContent: {
     fontSize: 24,
     fontWeight: 'bold',
     color:'white'
   },
+
+  cardContent2: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color:'white',
+    marginLeft: 14,
+    marginTop:5
+  },
+
+
+  cardContentTitle: {
+
+    fontSize: 18,
+    fontWeight: 'bold',
+    color:'white'
+  },
+  
   date: {
     fontSize: 12,
     color: '#666',

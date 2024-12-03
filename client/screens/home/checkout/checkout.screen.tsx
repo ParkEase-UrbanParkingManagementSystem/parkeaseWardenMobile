@@ -15,6 +15,8 @@ export default function CheckoutScreen() {
   const [roundedDuration, setRoundedDuration] = useState('');
   const [totalFee, setTotalFee] = useState(0);
 
+  console.log("This is parsed vhicleeeeeeeeeeeeeeeeeeeeeeeeeeeee", parsedVehicle);
+
   useEffect(() => {
     if (parsedVehicle) {
       const inTime = new Date(parsedVehicle.in_time);
